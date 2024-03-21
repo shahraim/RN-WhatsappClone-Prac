@@ -4,6 +4,8 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 import Chats from "../Screens/Chats";
 import Status from "../Screens/Status";
 import Calls from "../Screens/Calls";
+import Login from "../Screens/Login";
+import SignUp from "../Screens/SignUp";
 
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -11,7 +13,13 @@ const Tab = createMaterialTopTabNavigator();
 function MainNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="Typo" component={TabNavigator} />
       </Stack.Navigator>
     </NavigationContainer>

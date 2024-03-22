@@ -7,23 +7,54 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import UserInputs from "../Components/UserInputs";
+import * as Progress from "react-native-progress";
 import { BlurView } from "expo-blur";
 import { avatars } from "../Utils/Avatar";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../Config/Firebase.config";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function SignUp({ navigation }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [emailIsValid, setEmailIsValid] = useState("");
+  const [emailIsValid, setEmailIsValid] = useState(false);
   const [password, setPassword] = useState("");
   const [isAvatar, setIsAvatar] = useState(false);
+  const [isProgress, setIsProgress] = useState(false);
   const [avatar, setAvatar] = useState(avatars[0]?.image.asset.url);
   const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
   const handleAvatar = (item) => {
     setAvatar(item?.image.asset.url);
     setIsAvatar(false);
+  };
+
+  const handleSingUp = async () => {
+    setIsProgress(true);
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log(user);
+        const data = {
+          _id: userCredential?.user.uid,
+          fullName: name,
+          profilePic: avatar,
+          providerData: userCredential.user.providerData,
+        };
+        setDoc(doc(db, "users", userCredential?.user.uid), data).then((res) => {
+          navigation.navigate("Login");
+          setIsProgress(false);
+        });
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        alert(errorMessage);
+        setIsProgress(false)
+      });
   };
 
   return (
@@ -86,11 +117,10 @@ export default function SignUp({ navigation }) {
           isPass={true}
           setStateValue={setPassword}
         />
-        <TouchableOpacity
-          style={styles.signUpButton}
-          onPress={() => console.log("Sign Up")}
-        >
-          <Text style={styles.signUpButtonText}>Sign Up</Text>
+        <TouchableOpacity style={styles.signUpButton} onPress={handleSingUp}>
+          <Text style={styles.signUpButtonText}>
+            {isProgress ? <ActivityIndicator color={"gray"} /> : "Sign Up"}
+          </Text>
         </TouchableOpacity>
         <View style={styles.bottomTextContainer}>
           <Text style={styles.bottomText}>Already have an account?</Text>

@@ -1,11 +1,46 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+} from "react-native";
+import React, { useEffect, useState } from "react";
 import UserInputs from "../Components/UserInputs";
+import { auth, db } from "../Config/Firebase.config";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../Config/toolkit/userReducer";
 
 export default function Login({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailIsValid, setEmailIsValid] = useState(false);
+  const [isProgress, setIsProgress] = useState(false);
+  const dispatch = useDispatch();
+
+  const handleLogin = () => {
+    setIsProgress(true);
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        if (userCredential) {
+          getDoc(doc(db, "users", userCredential?.user.uid)).then((docSnap) => {
+            if (docSnap.exists()) {
+              dispatch(setUserData(docSnap.data()));
+            }
+          });
+        }
+        setIsProgress(false);
+        navigation.replace("Chatter");
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        alert(errorMessage);
+        setIsProgress(false);
+      });
+  };
 
   return (
     <View style={styles.container}>
@@ -13,21 +48,18 @@ export default function Login({ navigation }) {
         placeholder={"Email"}
         isPass={false}
         setStateValue={setEmail}
-        style={styles.input}
         setEmailIsValid={setEmailIsValid}
       />
       <UserInputs
         placeholder={"Password"}
         isPass={true}
         setStateValue={setPassword}
-        style={styles.input}
       />
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Typo")}
-        style={styles.loginButton}
-      >
-        <Text style={styles.loginButtonText}>Log In</Text>
+      <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
+        <Text style={styles.loginButtonText}>
+          {isProgress ? <ActivityIndicator color={"gray"} /> : "Log In"}
+        </Text>
       </TouchableOpacity>
       <View style={styles.signUpContainer}>
         <Text style={styles.signUpText}>Don't have an account?</Text>

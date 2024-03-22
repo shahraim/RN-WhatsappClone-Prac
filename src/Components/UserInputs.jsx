@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 
 export default function UserInputs({
@@ -17,11 +17,11 @@ export default function UserInputs({
   const [value, setValue] = useState("");
   const [emailValid, setEmailValid] = useState("");
   const [passChange, setPassChange] = useState(true);
-  const [icon, setIcon] = useState();
+  const [icon, setIcon] = useState("");
 
   const handleGetValue = (text) => {
     setValue(text);
-    if (placeholder == "Email") {
+    if (placeholder === "Email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const status = emailRegex.test(text);
       setEmailValid(status);
@@ -29,46 +29,43 @@ export default function UserInputs({
     }
     setStateValue(text);
   };
+
   useLayoutEffect(() => {
     switch (placeholder) {
       case "Full Name":
-        return setIcon("person");
+        setIcon("person");
+        break;
       case "Email":
-        return setIcon("mail");
+        setIcon("mail");
+        break;
       case "Password":
-        return setIcon("lock");
+        setIcon("lock");
+        break;
+      default:
+        break;
     }
+  }, [placeholder]);
+
+  useEffect(() => {
+    setStateValue("");
+    setValue("");
   }, []);
 
   return (
     <View
       style={[
-        {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-          marginVertical: 10,
-          height: 50,
-          width: "100%",
-          borderWidth: 1,
-          borderRadius: 8,
-        },
-        !emailValid && placeholder === "Email" && value.length > 0
-          ? { borderColor: "red" }
-          : { borderColor: "gray" },
+        styles.container,
+        !emailValid &&
+          placeholder === "Email" &&
+          value.length > 0 && {
+            borderColor: "red",
+          },
       ]}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-        }}
-      >
+      <View style={styles.inputContainer}>
         <MaterialIcons name={icon} color="#000" size={18} />
         <TextInput
-          style={{ height: "100%", width: "80%" }}
+          style={styles.input}
           placeholder={placeholder}
           value={value}
           onChangeText={handleGetValue}
@@ -84,4 +81,25 @@ export default function UserInputs({
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+    height: 50,
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: "gray",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
+  input: {
+    height: "100%",
+    width: "80%",
+  },
+});

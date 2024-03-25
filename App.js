@@ -9,7 +9,7 @@ export default function App() {
     <Provider store={store}>
       <View style={styles.container}>
         <MainNavigator />
-        <StatusBar style="inverted" />
+        <StatusBar style="auto" />
       </View>
     </Provider>
   );

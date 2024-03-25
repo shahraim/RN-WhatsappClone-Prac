@@ -10,18 +10,24 @@ import {
   Button,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
 
 export default function Messages({ chat }) {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
 
-  const handleImageSelection = () => {
-    // Logic to handle image selection
-  };
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      quality: 1,
+    });
 
-  const handleImageUrlSubmit = () => {
-    // Logic to handle URL submission
+    if (!result.cancelled) {
+      setImageUrl([...imageUrl, result.assets[0].uri]);
+    }
+    console.log(imageUrl);
   };
 
   return (
@@ -54,13 +60,7 @@ export default function Messages({ chat }) {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Button title="Select Image" onPress={handleImageSelection} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Image URL"
-              onChangeText={(text) => setImageUrl(text)}
-            />
-            <Button title="Submit" onPress={handleImageUrlSubmit} />
+            <Button title="Select Image" onPress={pickImage} />
             <Button
               title="Close"
               onPress={() => setModalVisible(!modalVisible)}
@@ -107,6 +107,8 @@ const styles = StyleSheet.create({
   modalView: {
     margin: 20,
     backgroundColor: "white",
+    width: 350,
+    height: 300,
     borderRadius: 20,
     padding: 35,
     alignItems: "center",
@@ -115,6 +117,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
+    gap: 10,
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,

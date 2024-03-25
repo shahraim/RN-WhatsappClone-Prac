@@ -66,34 +66,6 @@ export default function Chats({ navigation }) {
   );
 }
 
-// function Messages({ chat }) {
-//   const navigation = useNavigation();
-//   return (
-//     <View style={styles.chatItem}>
-//       <TouchableOpacity>
-//         <Image
-//           source={{
-//             uri: chat.groupIcon,
-//           }}
-//           style={styles.avatar}
-//           resizeMode="cover"
-//         />
-//       </TouchableOpacity>
-//       <View style={styles.chatContent}>
-//         <TouchableOpacity
-//           onPress={() => navigation.navigate("ChatScreen", { room: chat })}
-//         >
-//           <Text style={styles.chatName}>{chat.chatName}</Text>
-//           <Text style={styles.chatMessage}>
-//             Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui,
-//             laborum quod. Fugit, praesent...
-//           </Text>
-//         </TouchableOpacity>
-//       </View>
-//     </View>
-//   );
-// }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -113,28 +85,4 @@ const styles = StyleSheet.create({
   chatsContainer: {
     padding: 15,
   },
-  // chatItem: {
-  //   flexDirection: "row",
-  //   alignItems: "center",
-  //   marginBottom: 18,
-  // },
-  // avatar: {
-  //   width: 50,
-  //   height: 50,
-  //   marginRight: 10,
-  //   borderWidth: 1,
-  //   borderColor: "green",
-  //   borderRadius: 25,
-  // },
-  // chatContent: {
-  //   flex: 1,
-  // },
-  // chatName: {
-  //   fontSize: 16,
-  //   fontWeight: "bold",
-  // },
-  // chatMessage: {
-  //   fontSize: 14,
-  //   color: "#666",
-  // },
 });

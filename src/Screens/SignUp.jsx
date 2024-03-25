@@ -42,10 +42,14 @@ export default function SignUp({ navigation }) {
           _id: userCredential?.user.uid,
           fullName: name,
           profilePic: avatar,
+          alreadyIn: false,
           providerData: userCredential.user.providerData,
         };
         setDoc(doc(db, "users", userCredential?.user.uid), data).then((res) => {
-          navigation.navigate("Login");
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+          });
           setIsProgress(false);
         });
       })
@@ -53,7 +57,7 @@ export default function SignUp({ navigation }) {
         const errorCode = error.code;
         const errorMessage = error.message;
         alert(errorMessage);
-        setIsProgress(false)
+        setIsProgress(false);
       });
   };
 

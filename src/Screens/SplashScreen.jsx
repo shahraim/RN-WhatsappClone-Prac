@@ -10,14 +10,21 @@ export default function SplashScreen({ navigation }) {
   useLayoutEffect(() => {
     checkUser();
   }, []);
+
   const checkUser = () => {
     auth.onAuthStateChanged((user) => {
       if (user?.uid) {
         getDoc(doc(db, "users", user?.uid)).then((docSnap) => {
           if (docSnap.exists()) {
-            dispatch(setUserData(docSnap.data()));
+            const userData = docSnap.data();
+            dispatch(setUserData(userData));
+            if (userData.alreadyIn) {
+              navigation.replace("Chatter");
+            } else {
+              navigation.replace("Login");
+            }
+            return;
           }
-            navigation.replace("Chatter");
         });
       } else {
         navigation.replace("Login");

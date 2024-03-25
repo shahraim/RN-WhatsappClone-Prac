@@ -7,20 +7,13 @@ import Calls from "../Screens/Calls";
 import Login from "../Screens/Login";
 import SignUp from "../Screens/SignUp";
 import SplashScreen from "../Screens/SplashScreen";
-import {
-  Button,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-} from "react-native";
-import { useSelector } from "react-redux";
+import UserAvatar from "../Components/UserAvatar";
+import UserProfile from "../Screens/UserProfile";
 
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialTopTabNavigator();
 
 function MainNavigator() {
-  const select = useSelector((state) => state.user.userData);
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -31,18 +24,13 @@ function MainNavigator() {
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen name="Profile" component={UserProfile} />
         <Stack.Screen
           name="Chatter"
           component={TabNavigator}
           options={{
             headerRight: () => (
-              <TouchableOpacity style={styles.avatarContainer}>
-                <Image
-                  source={{ uri: select.profilePic }}
-                  resizeMode="contain"
-                  style={styles.avatar}
-                />
-              </TouchableOpacity>
+              <UserAvatar width={40} height={40} margin={(0, 10, 0, 10)} />
             ),
             title: "Chatter",
             headerStyle: {
@@ -76,16 +64,3 @@ function TabNavigator() {
 }
 
 export default MainNavigator;
-
-const styles = StyleSheet.create({
-  avatarContainer: {
-    marginHorizontal: 10,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderWidth: 2,
-    borderColor: "gray",
-    borderRadius: 40,
-  },
-});

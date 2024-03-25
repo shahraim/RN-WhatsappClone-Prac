@@ -9,7 +9,7 @@ import React, { useEffect, useState } from "react";
 import UserInputs from "../Components/UserInputs";
 import { auth, db } from "../Config/Firebase.config";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../Config/toolkit/userReducer";
 
@@ -28,6 +28,15 @@ export default function Login({ navigation }) {
           getDoc(doc(db, "users", userCredential?.user.uid)).then((docSnap) => {
             if (docSnap.exists()) {
               dispatch(setUserData(docSnap.data()));
+              updateDoc(doc(db, "users", userCredential?.user.uid), {
+                alreadyIn: true,
+              })
+                .then(() => {
+                  console.log("alreadyIn updated to true");
+                })
+                .catch((error) => {
+                  console.error("Error updating document: ", error);
+                });
             }
           });
         }

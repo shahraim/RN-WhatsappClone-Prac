@@ -70,6 +70,7 @@ export default function UserInputs({
           value={value}
           onChangeText={handleGetValue}
           secureTextEntry={isPass && passChange}
+          autoCapitalize={placeholder === "Email" ? "none" : "sentences"}
         />
       </View>
       {isPass && (

@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { db } from "../Config/Firebase.config";
-import { useNavigation } from "@react-navigation/native";
 import Messages from "../Components/Messages";
 
 export default function Chats({ navigation }) {
@@ -26,7 +25,14 @@ export default function Chats({ navigation }) {
 
     const unSubscribe = onSnapshot(q, (querySnapshot) => {
       const chatRooms = querySnapshot.docs.map((doc) => doc.data());
-      setChats(chatRooms);
+      const userChats = chatRooms.filter((chat) => {
+        const usersEmails = chat.users.map((user) => {
+          return user.providerData[0].email;
+        });
+        return usersEmails?.includes(selector?.providerData[0]?.email);
+      });
+
+      setChats(userChats);
       setIsLoading(false);
     });
     return unSubscribe;
@@ -43,18 +49,22 @@ export default function Chats({ navigation }) {
       <ScrollView>
         <View style={styles.chatsContainer}>
           {isLoading ? (
-            <View>
-              <ActivityIndicator size={"large"} color={"red"} />
-            </View>
+            <ActivityIndicator size={"large"} color={"red"} />
           ) : (
             <>
-              {/* Render list of chats */}
               {chats && chats.length > 0 ? (
-                <>
-                  {chats.map((el, ind) => (
-                    <Messages key={ind} chat={el} />
-                  ))}
-                </>
+                chats.map((el, ind) => {
+                  const isUserInChat = el.users.some(
+                    (user) =>
+                      user.providerData[0].email ===
+                      selector.providerData[0].email
+                  );
+                  if (isUserInChat) {
+                    return <Messages key={ind} chat={el} />;
+                  } else {
+                    return null;
+                  }
+                })
               ) : (
                 <Text style={{ textAlign: "center" }}>No Groups</Text>
               )}

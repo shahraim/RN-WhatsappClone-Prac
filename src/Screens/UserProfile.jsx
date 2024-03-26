@@ -7,13 +7,15 @@ import {
   ImageBackground,
 } from "react-native";
 import UserAvatar from "../Components/UserAvatar";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AntDesign } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
 import { auth } from "../Config/Firebase.config";
+import { clearUserData } from "../Config/toolkit/userReducer";
 
 export default function UserProfile({ navigation }) {
   const select = useSelector((state) => state?.user?.userData);
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
     signOut(auth)
@@ -22,6 +24,7 @@ export default function UserProfile({ navigation }) {
           index: 0,
           routes: [{ name: "Login" }],
         });
+        dispatch(clearUserData());
       })
       .catch((error) => {
         const err = error.message;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,16 +6,52 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  TextInput,
   Button,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
+import { collection, query, orderBy, getDocs, limit } from "firebase/firestore";
+import { db } from "../Config/Firebase.config";
+
+const MAX_MESSAGE_LENGTH = 50;
 
 export default function Messages({ chat }) {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [modalVisible, setModalVisible] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
+  const [lastMessage, setLastMessage] = useState("");
+
+  const fetchLastMessage = useCallback(async () => {
+    const messagesRef = collection(db, `chats/${chat.id}/messages`);
+    const q = query(messagesRef, orderBy("timeStamp", "desc"), limit(1));
+
+    try {
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const lastMessageDoc = querySnapshot.docs[0];
+        const lastMessageData = lastMessageDoc.data();
+        const messageText = lastMessageData.message;
+        setLastMessage(truncateMessage(messageText));
+      } else {
+        setLastMessage("Start conversation");
+      }
+    } catch (error) {
+      console.error("Error fetching last message:", error);
+    }
+  }, [chat.id]);
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchLastMessage();
+    }
+  }, [isFocused, fetchLastMessage]);
+
+  const truncateMessage = (message) => {
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return message.slice(0, MAX_MESSAGE_LENGTH) + "...";
+    }
+    return message;
+  };
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -27,7 +63,6 @@ export default function Messages({ chat }) {
     if (!result.cancelled) {
       setImageUrl([...imageUrl, result.assets[0].uri]);
     }
-    console.log(imageUrl);
   };
 
   return (
@@ -45,8 +80,7 @@ export default function Messages({ chat }) {
         >
           <Text style={styles.chatName}>{chat.chatName}</Text>
           <Text style={styles.chatMessage}>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui,
-            laborum quod. Fugit, praesent...
+            {lastMessage ? lastMessage : "Start conversation"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -55,16 +89,13 @@ export default function Messages({ chat }) {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          setModalVisible(!modalVisible);
+          setModalVisible(false);
         }}
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Button title="Select Image" onPress={pickImage} />
-            <Button
-              title="Close"
-              onPress={() => setModalVisible(!modalVisible)}
-            />
+            <Button title="Close" onPress={() => setModalVisible(false)} />
           </View>
         </View>
       </Modal>
@@ -97,7 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
-
   centeredView: {
     flex: 1,
     justifyContent: "center",
@@ -121,12 +151,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    width: "80%",
   },
 });

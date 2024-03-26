@@ -12,7 +12,7 @@ export default function UserAvatar({ width, height, margin }) {
       style={{ margin: margin }}
     >
       <Image
-        source={{ uri: select.profilePic }}
+        source={{ uri: select?.profilePic }}
         resizeMode="contain"
         style={styles.avatar}
         width={width}

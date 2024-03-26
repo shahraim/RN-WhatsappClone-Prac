@@ -122,7 +122,7 @@ export default function UserChatScreen({ route, navigation }) {
                   ]}
                 >
                   <Image
-                    source={{ uri: el.user.profilePic }}
+                    source={{ uri: el?.user?.profilePic }}
                     width={25}
                     height={25}
                     style={[

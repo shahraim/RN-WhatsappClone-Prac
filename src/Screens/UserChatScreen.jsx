@@ -11,6 +11,7 @@ import {
   TextInput,
   ImageBackground,
   Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, FontAwesome, Entypo } from "@expo/vector-icons";
 import {
@@ -29,6 +30,7 @@ export default function UserChatScreen({ route, navigation }) {
   const { room } = route.params;
   const [message, setMessage] = useState("");
   const [allMessages, setAllMessages] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const user = useSelector((state) => state?.user?.userData);
   // const [showEmojiKeyboard, setShowEmojiKeyboard] = useState(false);
 
@@ -44,6 +46,9 @@ export default function UserChatScreen({ route, navigation }) {
   // };
 
   const sendMessage = () => {
+    if (!message.trim()) {
+      return;
+    }
     const timeStamp = serverTimestamp();
     const id = `${Date.now()}`;
     const messageDoc = {
@@ -67,6 +72,7 @@ export default function UserChatScreen({ route, navigation }) {
     const unSubscribe = onSnapshot(msgQuery, (querySnapshot) => {
       const msg = querySnapshot.docs.map((doc) => doc.data());
       setAllMessages(msg);
+      setIsLoading(false);
     });
     return unSubscribe;
   }, []);
@@ -102,31 +108,64 @@ export default function UserChatScreen({ route, navigation }) {
           style={styles.image}
         />
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={{ marginVertical: 10 }}>
-            {allMessages?.map((el, ind) => (
-              <View
-                key={ind}
-                style={[
-                  styles.messageContainer,
-                  el.user?.providerData[0]?.email ===
-                  user?.providerData[0].email
-                    ? styles.senderMessageContainer
-                    : styles.receiverMessageContainer,
-                ]}
-              >
-                <Text style={styles.messageText}>{el.message}</Text>
-                <Text style={{ fontSize: 10, color: "gray" }}>
-                  {new Date(
-                    parseInt(el?.timeStamp?.seconds) * 1000
-                  ).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
-                </Text>
-              </View>
-            ))}
-          </View>
+          {!isLoading ? (
+            <View style={{ marginVertical: 10 }}>
+              {allMessages?.map((el, ind) => (
+                <View
+                  key={ind}
+                  style={[
+                    styles.messageContainer,
+                    el.user?.providerData[0]?.email ===
+                    user?.providerData[0].email
+                      ? styles.senderMessageContainer
+                      : styles.receiverMessageContainer,
+                  ]}
+                >
+                  <Image
+                    source={{ uri: el.user.profilePic }}
+                    width={25}
+                    height={25}
+                    style={[
+                      el.user?.providerData[0]?.email ===
+                      user?.providerData[0].email
+                        ? styles.senderMessageImg
+                        : styles.receiverMessageImg,
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.messageContainer,
+                      el.user?.providerData[0]?.email ===
+                      user?.providerData[0].email
+                        ? styles.senderMessageText
+                        : styles.receiverMessageText,
+                    ]}
+                  >
+                    <Text style={styles.messageText}>{el.message}</Text>
+                    <Text style={{ fontSize: 10, color: "gray" }}>
+                      {new Date(
+                        parseInt(el?.timeStamp?.seconds) * 1000
+                      ).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      })}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+              }}
+            >
+              <ActivityIndicator size="large" color="#fff" />
+            </View>
+          )}
         </ScrollView>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -238,16 +277,29 @@ const styles = StyleSheet.create({
     maxWidth: "80%",
     padding: 10,
     borderRadius: 10,
-    marginBottom: 10,
-    marginHorizontal: 5,
+    // marginBottom: 10,
   },
   senderMessageContainer: {
     alignSelf: "flex-end",
-    backgroundColor: "#DCF8C5",
+  },
+  senderMessageImg: {
+    display: "none",
   },
   receiverMessageContainer: {
     alignSelf: "flex-start",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  senderMessageText: {
+    backgroundColor: "#DCF8C5",
+  },
+  receiverMessageText: {
     backgroundColor: "#E8E8E8",
+    marginLeft: 3,
+  },
+  receiverMessageImg: {
+    alignSelf: "flex-start",
   },
   messageText: {
     color: "#000",

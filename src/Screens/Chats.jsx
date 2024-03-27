@@ -40,11 +40,14 @@ export default function Chats({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("AddToChat")}
+        style={styles.messageDiv}
+      >
+        <Ionicons name="chatbox-ellipses" color={"white"} size={24} />
+      </TouchableOpacity>
       <View style={styles.header}>
         <Text style={styles.headerText}>Messages</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("AddToChat")}>
-          <Ionicons name="chatbox-ellipses" color={"gray"} size={24} />
-        </TouchableOpacity>
       </View>
       <ScrollView>
         <View style={styles.chatsContainer}>
@@ -79,20 +82,32 @@ export default function Chats({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    position: "relative",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 15,
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
   headerText: {
-    fontSize: 20,
+    fontSize: 17,
+    color: "purple",
     fontWeight: "bold",
   },
   chatsContainer: {
     padding: 15,
   },
+  messageDiv: {
+    position: "absolute",
+    bottom: 40,
+    right: 20,
+    backgroundColor: "green",
+    borderRadius: 100,
+    padding: 10,
+    zIndex: 1, // Ensure it has a higher zIndex than the ScrollView
+  },
 });
+

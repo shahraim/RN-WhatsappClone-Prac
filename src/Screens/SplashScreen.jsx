@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { auth, db } from "../Config/Firebase.config";
 import { doc, getDoc } from "firebase/firestore";
@@ -34,8 +34,7 @@ export default function SplashScreen({ navigation }) {
 
   return (
     <View style={styles.main}>
-      <Text>SplashScreen</Text>
-      <ActivityIndicator size={"large"} color={"#131313"} />
+      <Image source={require("../../assets/Animation - 1711474463753.gif")} />
     </View>
   );
 }

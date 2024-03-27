@@ -23,7 +23,11 @@ function MainNavigator() {
       //   headerShown: false,
       // }}
       >
-        <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen
+          name="SplashScreen"
+          options={{ headerShown: false }}
+          component={SplashScreen}
+        />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="Profile" component={UserProfile} />

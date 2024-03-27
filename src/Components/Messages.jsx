@@ -7,11 +7,15 @@ import {
   TouchableOpacity,
   Modal,
   Button,
+  TouchableWithoutFeedback,
+  Platform,
+  Alert,
 } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { collection, query, orderBy, getDocs, limit } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
+import { doc, deleteDoc } from "firebase/firestore";
 
 const MAX_MESSAGE_LENGTH = 50;
 
@@ -19,6 +23,7 @@ export default function Messages({ chat }) {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [modalVisible, setModalVisible] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [lastMessage, setLastMessage] = useState("");
 
   const fetchLastMessage = useCallback(async () => {
@@ -65,6 +70,15 @@ export default function Messages({ chat }) {
     }
   };
 
+  const handleDeleteChat = async () => {
+    try {
+      await deleteDoc(doc(db, "chats", chat.id));
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    }
+  };
+
   return (
     <View style={styles.chatItem}>
       <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -77,6 +91,7 @@ export default function Messages({ chat }) {
       <View style={styles.chatContent}>
         <TouchableOpacity
           onPress={() => navigation.navigate("ChatScreen", { room: chat })}
+          onLongPress={() => setShowDeleteModal(true)}
         >
           <Text style={styles.chatName}>{chat.chatName}</Text>
           <Text style={styles.chatMessage}>
@@ -98,6 +113,28 @@ export default function Messages({ chat }) {
             <Button title="Close" onPress={() => setModalVisible(false)} />
           </View>
         </View>
+      </Modal>
+      {/* Delete Chat Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showDeleteModal}
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowDeleteModal(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.deleteModal}>
+              <Text style={styles.deleteMessage}>Delete Chat?</Text>
+              <View style={styles.deleteButtonContainer}>
+                <Button
+                  title="Cancel"
+                  onPress={() => setShowDeleteModal(false)}
+                />
+                <Button title="Delete" onPress={handleDeleteChat} color="red" />
+              </View>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -134,22 +171,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 22,
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: "white",
-    width: 350,
-    height: 300,
-    borderRadius: 20,
-    padding: 35,
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    gap: 10,
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  },
+  deleteModal: {
+    backgroundColor: "white",
+    width: 300,
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  deleteMessage: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  deleteButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 });

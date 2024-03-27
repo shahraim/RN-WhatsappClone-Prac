@@ -32,18 +32,7 @@ export default function UserChatScreen({ route, navigation }) {
   const [allMessages, setAllMessages] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const user = useSelector((state) => state?.user?.userData);
-  // const [showEmojiKeyboard, setShowEmojiKeyboard] = useState(false);
-
-  // const toggleEmojiKeyboard = () => {
-  //   setShowEmojiKeyboard(!showEmojiKeyboard);
-  //   if (!showEmojiKeyboard && inputRef.current) {
-  //     setTimeout(() => {
-  //       inputRef.current.focus();
-  //     }, 100);
-  //   } else {
-  //     Keyboard.dismiss();
-  //   }
-  // };
+  const scrollViewRef = useRef();
 
   const sendMessage = () => {
     if (!message.trim()) {
@@ -77,6 +66,16 @@ export default function UserChatScreen({ route, navigation }) {
     return unSubscribe;
   }, []);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [allMessages]);
+
+  const scrollToBottom = () => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -95,6 +94,9 @@ export default function UserChatScreen({ route, navigation }) {
           <TouchableOpacity style={styles.icon}>
             <FontAwesome name="video-camera" size={20} color="#075E54" />
           </TouchableOpacity>
+          <TouchableOpacity style={styles.icon}>
+            <FontAwesome name="bars" size={20} color="#075E54" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -107,7 +109,11 @@ export default function UserChatScreen({ route, navigation }) {
           resizeMode="cover"
           style={styles.image}
         />
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView
+          ref={scrollViewRef}
+          contentContainerStyle={{ flexGrow: 1 }}
+          onContentSizeChange={scrollToBottom}
+        >
           {!isLoading ? (
             <View style={{ marginVertical: 10 }}>
               {allMessages?.map((el, ind) => (
@@ -142,15 +148,21 @@ export default function UserChatScreen({ route, navigation }) {
                     ]}
                   >
                     <Text style={styles.messageText}>{el.message}</Text>
-                    <Text style={{ fontSize: 10, color: "gray" }}>
-                      {new Date(
-                        parseInt(el?.timeStamp?.seconds) * 1000
-                      ).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      })}
-                    </Text>
+                    {el?.timeStamp ? (
+                      <Text style={{ fontSize: 10, color: "gray" }}>
+                        {new Date(
+                          parseInt(el?.timeStamp?.seconds) * 1000
+                        ).toLocaleTimeString("en-US", {
+                          hour: "numeric",
+                          minute: "numeric",
+                          hour12: true,
+                        })}
+                      </Text>
+                    ) : (
+                      <Text style={{ fontSize: 10, color: "gray" }}>
+                        sending
+                      </Text>
+                    )}
                   </View>
                 </View>
               ))}

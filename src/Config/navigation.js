@@ -12,6 +12,7 @@ import UserProfile from "../Screens/UserProfile";
 import UserChatScreen from "../Screens/UserChatScreen";
 import GroupChats from "../Screens/GroupChats";
 import SingleChat from "../Screens/SingleChat";
+import GroupOptions from "../Components/GroupOptions";
 
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -34,6 +35,11 @@ function MainNavigator() {
         <Stack.Screen name="Profile" component={UserProfile} />
         <Stack.Screen name="GroupChats" component={GroupChats} />
         <Stack.Screen name="SingleChat" component={SingleChat} />
+        <Stack.Screen
+          name="GroupOptions"
+          component={GroupOptions}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="ChatScreen"
           component={UserChatScreen}

@@ -1,17 +1,18 @@
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  Text,
   View,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
+  Text,
   Image,
   StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
   ActivityIndicator,
+  TouchableWithoutFeedback,
 } from "react-native";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
 import Messages from "../Components/Messages";
 
@@ -21,16 +22,16 @@ export default function Chats({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isChatClicked, setIsChatClicked] = useState(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const q = query(collection(db, "chats"), orderBy("id", "desc"));
 
     const unSubscribe = onSnapshot(q, (querySnapshot) => {
       const chatRooms = querySnapshot.docs.map((doc) => doc.data());
       const userChats = chatRooms.filter((chat) => {
-        const usersEmails = chat.users.map((user) => {
-          return user.providerData[0].email;
-        });
-        return usersEmails?.includes(selector?.providerData[0]?.email);
+        const usersEmails = chat.users.map(
+          (user) => user.providerData[0].email
+        );
+        return usersEmails.includes(selector.providerData[0].email);
       });
 
       setChats(userChats);
@@ -98,62 +99,75 @@ export default function Chats({ navigation }) {
       transform: [{ translateY: isChatClicked ? 0 : 50 }],
     },
   });
+  const closeOptions = () => {
+    setIsChatClicked(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.messageDiv}>
-        <View style={styles.options}>
-          <TouchableOpacity
-            style={{ alignItems: "center" }}
-            onPress={() => navigation.navigate("GroupChats")}
-          >
-            <FontAwesome name="group" size={24} color={"gray"} />
-            <Text style={{ fontSize: 10 }}>Group Chat</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{ alignItems: "center" }}
-            onPress={() => navigation.navigate("SingleChat")}
-          >
-            <Ionicons name="person" size={24} color={"gray"} />
-            <Text style={{ fontSize: 10 }}>Single Chat</Text>
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-          onPress={() => setIsChatClicked(!isChatClicked)}
-          style={styles.messageDivBtn}
-        >
-          <Ionicons name="chatbox-ellipses" color={"white"} size={24} />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Messages</Text>
-      </View>
-      <ScrollView>
-        <View style={styles.chatsContainer}>
-          {isLoading ? (
-            <ActivityIndicator size={"large"} color={"red"} />
-          ) : (
-            <>
-              {chats && chats.length > 0 ? (
-                chats.map((el, ind) => {
-                  const isUserInChat = el.users.some(
-                    (user) =>
-                      user.providerData[0].email ===
-                      selector.providerData[0].email
-                  );
-                  if (isUserInChat) {
-                    return <Messages key={ind} chat={el} />;
-                  } else {
-                    return null;
-                  }
-                })
+      <TouchableWithoutFeedback onPress={closeOptions}>
+        <View style={styles.container}>
+          <View style={styles.messageDiv}>
+            <View style={styles.options}>
+              <TouchableOpacity
+                style={{ alignItems: "center" }}
+                onPress={() => {
+                  navigation.navigate("GroupChats");
+                  setIsChatClicked(false);
+                }}
+              >
+                <FontAwesome name="group" size={24} color={"gray"} />
+                <Text style={{ fontSize: 10 }}>Group Chat</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ alignItems: "center" }}
+                onPress={() => {
+                  navigation.navigate("SingleChat");
+                  setIsChatClicked(false);
+                }}
+              >
+                <Ionicons name="person" size={24} color={"gray"} />
+                <Text style={{ fontSize: 10 }}>Single Chat</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIsChatClicked(!isChatClicked)}
+              style={styles.messageDivBtn}
+            >
+              <Ionicons name="chatbox-ellipses" color={"white"} size={24} />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.header}>
+            <Text style={styles.headerText}>Messages</Text>
+          </View>
+          <ScrollView>
+            <View style={styles.chatsContainer}>
+              {isLoading ? (
+                <ActivityIndicator size={"large"} color={"red"} />
               ) : (
-                <Text style={{ textAlign: "center" }}>No Chats</Text>
+                <>
+                  {chats && chats.length > 0 ? (
+                    chats.map((el, ind) => {
+                      const isUserInChat = el.users.some(
+                        (user) =>
+                          user.providerData[0].email ===
+                          selector.providerData[0].email
+                      );
+                      if (isUserInChat) {
+                        return <Messages key={ind} chat={el} />;
+                      } else {
+                        return null;
+                      }
+                    })
+                  ) : (
+                    <Text style={{ textAlign: "center" }}>No Chats</Text>
+                  )}
+                </>
               )}
-            </>
-          )}
+            </View>
+          </ScrollView>
         </View>
-      </ScrollView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }

@@ -83,7 +83,7 @@ export default function GroupChats() {
           value={email}
           onChangeText={(text) => setEmail(text)}
           style={styles.input}
-          autoCapitalize={"sentences"}
+          autoCapitalize={"none"}
         />
       </View>
       <View style={styles.inputContainer}>

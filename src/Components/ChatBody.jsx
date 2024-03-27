@@ -10,10 +10,9 @@ import {
   Platform,
   TextInput,
   ImageBackground,
-  Keyboard,
   ActivityIndicator,
 } from "react-native";
-import { Ionicons, FontAwesome, Entypo } from "@expo/vector-icons";
+import { FontAwesome, Entypo } from "@expo/vector-icons";
 import {
   addDoc,
   collection,
@@ -26,8 +25,48 @@ import {
 import { db } from "../Config/Firebase.config";
 import { useSelector } from "react-redux";
 
-export default function ChatBody() {
+export default function ChatBody({ room }) {
+  const [message, setMessage] = useState("");
+  const [allMessages, setAllMessages] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const currentUser = useSelector((state) => state?.user?.userData);
   const scrollViewRef = useRef();
+
+  const sendMessage = () => {
+    if (!message.trim()) {
+      return;
+    }
+    const timeStamp = serverTimestamp();
+    const id = `${Date.now()}`;
+    const messageDoc = {
+      id: id,
+      roomId: room.id,
+      timeStamp: timeStamp,
+      message: message,
+      user: currentUser,
+    };
+    setMessage("");
+    addDoc(collection(doc(db, "chats", room.id), "messages"), messageDoc)
+      .then(() => {})
+      .catch((err) => alert(err));
+  };
+
+  useLayoutEffect(() => {
+    const msgQuery = query(
+      collection(db, "chats", room.id, "messages"),
+      orderBy("timeStamp", "asc")
+    );
+    const unSubscribe = onSnapshot(msgQuery, (querySnapshot) => {
+      const msg = querySnapshot.docs.map((doc) => doc.data());
+      setAllMessages(msg);
+      setIsLoading(false);
+    });
+    return unSubscribe;
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [allMessages]);
 
   const scrollToBottom = () => {
     if (scrollViewRef.current) {
@@ -116,14 +155,10 @@ export default function ChatBody() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
         style={styles.inputContainer}
       >
-        <TouchableOpacity
-          style={styles.emojiButton}
-          // onPress={toggleEmojiKeyboard}
-        >
+        <TouchableOpacity style={styles.emojiButton}>
           <Entypo name="emoji-happy" size={20} color="#000" />
         </TouchableOpacity>
         <TextInput
-          // ref={inputRef}
           style={styles.input}
           placeholder="Type Here ..."
           placeholderTextColor="#000"
@@ -142,4 +177,72 @@ export default function ChatBody() {
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  image: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
+  body: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    backgroundColor: "#fff",
+  },
+  emojiButton: {
+    padding: 10,
+  },
+  input: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    marginRight: 10,
+  },
+  micButton: {
+    padding: 10,
+  },
+  sendButton: {
+    padding: 10,
+  },
+  messageContainer: {
+    maxWidth: "80%",
+    padding: 10,
+    borderRadius: 10,
+  },
+  senderMessageContainer: {
+    alignSelf: "flex-end",
+  },
+  senderMessageImg: {
+    display: "none",
+  },
+  receiverMessageContainer: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  senderMessageText: {
+    backgroundColor: "#DCF8C5",
+  },
+  receiverMessageText: {
+    backgroundColor: "#E8E8E8",
+    marginLeft: 3,
+  },
+  receiverMessageImg: {
+    alignSelf: "flex-start",
+  },
+  messageText: {
+    color: "#000",
+  },
+});

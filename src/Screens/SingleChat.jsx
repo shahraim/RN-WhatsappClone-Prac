@@ -111,7 +111,7 @@ export default function SingleChat() {
           value={email}
           onChangeText={(text) => setEmail(text)}
           style={styles.input}
-          autoCapitalize={"sentences"}
+          autoCapitalize={"none"}
         />
         <TouchableOpacity
           onPress={addUserToChat}

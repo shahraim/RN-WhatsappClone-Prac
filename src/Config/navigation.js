@@ -10,7 +10,8 @@ import SplashScreen from "../Screens/SplashScreen";
 import UserAvatar from "../Components/UserAvatar";
 import UserProfile from "../Screens/UserProfile";
 import UserChatScreen from "../Screens/UserChatScreen";
-import AddToChat from "../Screens/AddToChat";
+import GroupChats from "../Screens/GroupChats";
+import SingleChat from "../Screens/SingleChat";
 
 const Stack = createNativeStackNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -31,7 +32,8 @@ function MainNavigator() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="Profile" component={UserProfile} />
-        <Stack.Screen name="AddToChat" component={AddToChat} />
+        <Stack.Screen name="GroupChats" component={GroupChats} />
+        <Stack.Screen name="SingleChat" component={SingleChat} />
         <Stack.Screen
           name="ChatScreen"
           component={UserChatScreen}

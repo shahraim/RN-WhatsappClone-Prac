@@ -13,7 +13,7 @@ import { doc, getDocs, setDoc, collection } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
 import { useNavigation } from "@react-navigation/native";
 
-export default function AddToChat() {
+export default function GroupChats() {
   const navigation = useNavigation();
   const currentUser = useSelector((state) => state.user.userData);
   const [email, setEmail] = useState("");
@@ -54,6 +54,7 @@ export default function AddToChat() {
             "https://png.pngtree.com/png-clipart/20190620/original/pngtree-vector-leader-of-group-icon-png-image_4022100.jpg",
           users: [currentUser, userDataTwo],
           chatName: chatName,
+          chatIs: "group",
         };
 
         await setDoc(doc(db, "chats", id), chatDoc);

@@ -16,6 +16,7 @@ import * as ImagePicker from "expo-image-picker";
 import { collection, query, orderBy, getDocs, limit } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
 import { doc, deleteDoc } from "firebase/firestore";
+import { useSelector } from "react-redux";
 
 const MAX_MESSAGE_LENGTH = 50;
 
@@ -24,6 +25,7 @@ export default function Messages({ chat }) {
   const isFocused = useIsFocused();
   const [modalVisible, setModalVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const currentUser = useSelector((state) => state.user.userData);
   const [lastMessage, setLastMessage] = useState("");
 
   const fetchLastMessage = useCallback(async () => {
@@ -44,7 +46,8 @@ export default function Messages({ chat }) {
       console.error("Error fetching last message:", error);
     }
   }, [chat.id]);
-
+  let mainUser;
+  chat.users.map((el) => (mainUser = el));
   useEffect(() => {
     if (isFocused) {
       fetchLastMessage();
@@ -74,6 +77,7 @@ export default function Messages({ chat }) {
     try {
       await deleteDoc(doc(db, "chats", chat.id));
       setModalVisible(false);
+      setShowDeleteModal(false)
     } catch (error) {
       console.error("Error deleting chat:", error);
     }
@@ -93,7 +97,19 @@ export default function Messages({ chat }) {
           onPress={() => navigation.navigate("ChatScreen", { room: chat })}
           onLongPress={() => setShowDeleteModal(true)}
         >
-          <Text style={styles.chatName}>{chat.chatName}</Text>
+          <Text style={styles.chatName}>
+            {chat.chatName === currentUser.fullName &&
+            chat.chatName !== mainUser.fullName
+              ? chat.users
+                  .filter(
+                    (user) =>
+                      user.providerData[0].email !==
+                      currentUser.providerData[0].email
+                  )
+                  .map((user) => user.fullName)
+                  .join(", ")
+              : chat.chatName}
+          </Text>
           <Text style={styles.chatMessage}>
             {lastMessage ? lastMessage : "Start conversation"}
           </Text>

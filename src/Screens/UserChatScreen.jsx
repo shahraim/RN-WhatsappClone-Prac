@@ -31,7 +31,7 @@ export default function UserChatScreen({ route, navigation }) {
   const [message, setMessage] = useState("");
   const [allMessages, setAllMessages] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const user = useSelector((state) => state?.user?.userData);
+  const currentUser = useSelector((state) => state?.user?.userData);
   const scrollViewRef = useRef();
 
   const sendMessage = () => {
@@ -45,13 +45,16 @@ export default function UserChatScreen({ route, navigation }) {
       roomId: room.id,
       timeStamp: timeStamp,
       message: message,
-      user: user,
+      user: currentUser,
     };
     setMessage("");
     addDoc(collection(doc(db, "chats", room.id), "messages"), messageDoc)
       .then(() => {})
       .catch((err) => alert(err));
   };
+
+  let mainUser;
+  room.users.map((el) => (mainUser = el));
 
   useLayoutEffect(() => {
     const msgQuery = query(
@@ -85,7 +88,20 @@ export default function UserChatScreen({ route, navigation }) {
         </TouchableOpacity>
         <View style={styles.userInfo}>
           <Image source={{ uri: room.groupIcon }} style={styles.avatar} />
-          <Text style={styles.userName}>{room.chatName}</Text>
+          {/* <Text style={styles.userName}>{room.chatName}</Text> */}
+          <Text style={styles.userName}>
+            {room.chatName === currentUser.fullName &&
+            room.chatName !== mainUser.fullName
+              ? room.users
+                  .filter(
+                    (user) =>
+                      user.providerData[0].email !==
+                      currentUser.providerData[0].email
+                  )
+                  .map((user) => user.fullName)
+                  .join(", ")
+              : room.chatName}
+          </Text>
         </View>
         <View style={styles.iconContainer}>
           <TouchableOpacity style={styles.icon}>
@@ -122,7 +138,7 @@ export default function UserChatScreen({ route, navigation }) {
                   style={[
                     styles.messageContainer,
                     el.user?.providerData[0]?.email ===
-                    user?.providerData[0].email
+                    currentUser?.providerData[0].email
                       ? styles.senderMessageContainer
                       : styles.receiverMessageContainer,
                   ]}
@@ -133,7 +149,7 @@ export default function UserChatScreen({ route, navigation }) {
                     height={25}
                     style={[
                       el.user?.providerData[0]?.email ===
-                      user?.providerData[0].email
+                      currentUser?.providerData[0].email
                         ? styles.senderMessageImg
                         : styles.receiverMessageImg,
                     ]}
@@ -142,7 +158,7 @@ export default function UserChatScreen({ route, navigation }) {
                     style={[
                       styles.messageContainer,
                       el.user?.providerData[0]?.email ===
-                      user?.providerData[0].email
+                      currentUser?.providerData[0].email
                         ? styles.senderMessageText
                         : styles.receiverMessageText,
                     ]}

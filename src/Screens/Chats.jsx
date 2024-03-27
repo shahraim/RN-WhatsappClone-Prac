@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import React, { useLayoutEffect, useState } from "react";
 import {
@@ -19,6 +19,7 @@ export default function Chats({ navigation }) {
   const selector = useSelector((state) => state.user.userData);
   const [chats, setChats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isChatClicked, setIsChatClicked] = useState(false);
 
   useLayoutEffect(() => {
     const q = query(collection(db, "chats"), orderBy("id", "desc"));
@@ -38,14 +39,92 @@ export default function Chats({ navigation }) {
     return unSubscribe;
   }, []);
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      position: "relative",
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: "#ccc",
+    },
+    headerText: {
+      fontSize: 17,
+      color: "purple",
+      fontWeight: "bold",
+    },
+    chatsContainer: {
+      padding: 15,
+    },
+    messageDiv: {
+      position: "absolute",
+      bottom: 40,
+      right: 20,
+      zIndex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 5,
+    },
+    messageDivBtn: {
+      backgroundColor: "green",
+      borderRadius: 100,
+      padding: 10,
+    },
+    options: {
+      position: "absolute",
+      bottom: 45,
+      right: 20,
+      width: 70,
+      backgroundColor: "white",
+      borderRadius: 10,
+      padding: 8,
+      gap: 10,
+      // flexDirection: "row",
+      justifyContent: "space-around",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+      opacity: isChatClicked ? 1 : 0,
+      transform: [{ translateY: isChatClicked ? 0 : 50 }],
+    },
+  });
+
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.navigate("AddToChat")}
-        style={styles.messageDiv}
-      >
-        <Ionicons name="chatbox-ellipses" color={"white"} size={24} />
-      </TouchableOpacity>
+      <View style={styles.messageDiv}>
+        <View style={styles.options}>
+          <TouchableOpacity
+            style={{ alignItems: "center" }}
+            onPress={() => navigation.navigate("GroupChats")}
+          >
+            <FontAwesome name="group" size={24} color={"gray"} />
+            <Text style={{ fontSize: 10 }}>Group Chat</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ alignItems: "center" }}
+            onPress={() => navigation.navigate("SingleChat")}
+          >
+            <Ionicons name="person" size={24} color={"gray"} />
+            <Text style={{ fontSize: 10 }}>Single Chat</Text>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          onPress={() => setIsChatClicked(!isChatClicked)}
+          style={styles.messageDivBtn}
+        >
+          <Ionicons name="chatbox-ellipses" color={"white"} size={24} />
+        </TouchableOpacity>
+      </View>
       <View style={styles.header}>
         <Text style={styles.headerText}>Messages</Text>
       </View>
@@ -69,7 +148,7 @@ export default function Chats({ navigation }) {
                   }
                 })
               ) : (
-                <Text style={{ textAlign: "center" }}>No Groups</Text>
+                <Text style={{ textAlign: "center" }}>No Chats</Text>
               )}
             </>
           )}
@@ -78,36 +157,3 @@ export default function Chats({ navigation }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: "relative",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  headerText: {
-    fontSize: 17,
-    color: "purple",
-    fontWeight: "bold",
-  },
-  chatsContainer: {
-    padding: 15,
-  },
-  messageDiv: {
-    position: "absolute",
-    bottom: 40,
-    right: 20,
-    backgroundColor: "green",
-    borderRadius: 100,
-    padding: 10,
-    zIndex: 1, // Ensure it has a higher zIndex than the ScrollView
-  },
-});
-

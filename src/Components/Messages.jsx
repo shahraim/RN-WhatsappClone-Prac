@@ -23,7 +23,7 @@ const MAX_MESSAGE_LENGTH = 50;
 export default function Messages({ chat }) {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const [modalVisible, setModalVisible] = useState(false);
+  // const [modalVisible, setModalVisible] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const currentUser = useSelector((state) => state.user.userData);
   const [lastMessage, setLastMessage] = useState("");
@@ -61,31 +61,38 @@ export default function Messages({ chat }) {
     return message;
   };
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      quality: 1,
-    });
+  // const pickImage = async () => {
+  //   let result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.All,
+  //     allowsEditing: true,
+  //     quality: 1,
+  //   });
 
-    if (!result.cancelled) {
-      setImageUrl([...imageUrl, result.assets[0].uri]);
-    }
-  };
+  //   if (!result.cancelled) {
+  //     setImageUrl([...imageUrl, result.assets[0].uri]);
+  //   }
+  // };
 
   const handleDeleteChat = async () => {
     try {
       await deleteDoc(doc(db, "chats", chat.id));
-      setModalVisible(false);
-      setShowDeleteModal(false)
+      const messagesRef = collection(db, `chats/${chat.id}/messages`);
+      const querySnapshot = await getDocs(messagesRef);
+      querySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+      setShowDeleteModal(false);
     } catch (error) {
       console.error("Error deleting chat:", error);
+      setShowDeleteModal(false);
     }
   };
 
   return (
     <View style={styles.chatItem}>
-      <TouchableOpacity onPress={() => setModalVisible(true)}>
+      <TouchableOpacity
+      // onPress={() => setModalVisible(true)}
+      >
         <Image
           source={{ uri: chat.groupIcon }}
           style={styles.avatar}
@@ -115,7 +122,7 @@ export default function Messages({ chat }) {
           </Text>
         </TouchableOpacity>
       </View>
-      <Modal
+      {/* <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
@@ -129,7 +136,7 @@ export default function Messages({ chat }) {
             <Button title="Close" onPress={() => setModalVisible(false)} />
           </View>
         </View>
-      </Modal>
+      </Modal> */}
       {/* Delete Chat Modal */}
       <Modal
         animationType="slide"

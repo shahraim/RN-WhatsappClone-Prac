@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   StyleSheet,
@@ -23,11 +24,11 @@ import { Ionicons } from "@expo/vector-icons";
 
 export default function GroupOptions({ route, navigation }) {
   const { room } = route.params;
-  const currentUser = useSelector((state) => state.user.userData);
   const [email, setEmail] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [chatRoom, setChatRoom] = useState([]);
 
   useLayoutEffect(() => {
@@ -42,6 +43,7 @@ export default function GroupOptions({ route, navigation }) {
     }
 
     setIsButtonEnabled(false);
+    setIsLoading(true);
 
     try {
       const usersRef = collection(db, "users");
@@ -66,6 +68,7 @@ export default function GroupOptions({ route, navigation }) {
         if (userExistsInGroup) {
           Alert.alert("User is already in the group");
           setIsButtonEnabled(true);
+          setIsLoading(false);
           return;
         }
         const userData = querySnapshot.docs
@@ -85,69 +88,80 @@ export default function GroupOptions({ route, navigation }) {
         setEmail("");
       } else {
         Alert.alert("User with the specified email does not exist");
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error adding user to group:", error);
       Alert.alert("Error", "An error occurred while adding user to the group");
     } finally {
       setIsButtonEnabled(true);
+      setIsLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="arrow-back" size={24} color="#075E54" />
-      </TouchableOpacity>
-      <View style={styles.userInfo}>
-        <Image source={{ uri: room.groupIcon }} style={styles.avatar} />
-        <Text style={styles.chatName}>{room.chatName}</Text>
-      </View>
-      <TextInput
-        placeholder="Enter user email"
-        placeholderTextColor={"gray"}
-        value={email}
-        onChangeText={(text) => setEmail(text)}
-        style={styles.input}
-        autoCapitalize={"none"}
-      />
-      <TouchableOpacity
-        onPress={addUserToGroup}
-        disabled={!isButtonEnabled}
-        style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
-      >
-        <Text style={styles.buttonText}>Add User to Group</Text>
-      </TouchableOpacity>
-      {error ? <Text style={styles.errorMessage}>{error}</Text> : null}
-      {successMessage ? (
-        <Text style={styles.successMessage}>{successMessage}</Text>
-      ) : null}
-      <View style={styles.usersList}>
-        <Text style={styles.usersHeader}>Users in Chat:</Text>
-        {chatRoom.map((user, index) => (
-          <View
-            key={index}
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Image
-                source={{ uri: user.profilePic }}
-                style={styles.userAvatar}
-              />
-              <Text style={styles.userEmail}>{user.providerData[0].email}</Text>
+    <>
+      {isLoading && (
+        <View style={styles.loading}>
+          <ActivityIndicator size={"large"} color={"red"} />
+        </View>
+      )}
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#075E54" />
+        </TouchableOpacity>
+        <View style={styles.userInfo}>
+          <Image source={{ uri: room.groupIcon }} style={styles.avatar} />
+          <Text style={styles.chatName}>{room.chatName}</Text>
+        </View>
+        <TextInput
+          placeholder="Enter user email"
+          placeholderTextColor={"gray"}
+          value={email}
+          onChangeText={(text) => setEmail(text)}
+          style={styles.input}
+          autoCapitalize={"none"}
+        />
+        <TouchableOpacity
+          onPress={addUserToGroup}
+          disabled={!isButtonEnabled}
+          style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
+        >
+          <Text style={styles.buttonText}>Add User to Group</Text>
+        </TouchableOpacity>
+        {error ? <Text style={styles.errorMessage}>{error}</Text> : null}
+        {successMessage ? (
+          <Text style={styles.successMessage}>{successMessage}</Text>
+        ) : null}
+        <View style={styles.usersList}>
+          <Text style={styles.usersHeader}>Users in Chat:</Text>
+          {chatRoom.map((user, index) => (
+            <View
+              key={index}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image
+                  source={{ uri: user.profilePic }}
+                  style={styles.userAvatar}
+                />
+                <Text style={styles.userEmail}>
+                  {user.providerData[0].email}
+                </Text>
+              </View>
+              <Text style={styles.userName}>{user.fullName}</Text>
             </View>
-            <Text style={styles.userName}>{user.fullName}</Text>
-          </View>
-        ))}
+          ))}
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -228,5 +242,15 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 16,
+  },
+  loading: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "gray",
+    zIndex: 1,
+    opacity: 0.4,
   },
 });

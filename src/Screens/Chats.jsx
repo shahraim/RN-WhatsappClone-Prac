@@ -29,9 +29,9 @@ export default function Chats({ navigation }) {
       const chatRooms = querySnapshot.docs.map((doc) => doc.data());
       const userChats = chatRooms.filter((chat) => {
         const usersEmails = chat.users.map(
-          (user) => user.providerData[0].email
+          (user) => user?.providerData[0]?.email
         );
-        return usersEmails.includes(selector.providerData[0].email);
+        return usersEmails.includes(selector?.providerData[0]?.email);
       });
 
       setChats(userChats);

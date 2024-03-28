@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -8,11 +8,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import { doc, getDoc, setDoc, collection } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { auth, db } from "../Config/Firebase.config";
-import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function GroupOptions({ route, navigation }) {
   const { room } = route.params;
@@ -21,9 +28,11 @@ export default function GroupOptions({ route, navigation }) {
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [chatRoom, setChatRoom] = useState([]);
 
-  const usersInChat = room.users;
-
+  useLayoutEffect(() => {
+    setChatRoom([...room.users]);
+  }, []);
   const addUserToGroup = async () => {
     if (!isButtonEnabled) return;
 
@@ -34,48 +43,55 @@ export default function GroupOptions({ route, navigation }) {
 
     setIsButtonEnabled(false);
 
-    auth.onAuthStateChanged((user) => {
-      if (user?.uid) {
-        getDoc(doc(db, "users", email))
-          .then(async (docSnap) => {
-            console.log("Document snapshot:", docSnap);
-            console.log("Does document exist?", docSnap.exists());
+    try {
+      const usersRef = collection(db, "users");
+      const querySnapshot = await getDocs(usersRef);
 
-            if (docSnap.exists()) {
-              const userData = docSnap.data();
-              console.log("User data:", userData);
+      let userExists = false;
 
-              // Check if the user is already in the group
-              const userExistsInGroup = room.users.some(
-                (user) => user.providerData[0].email === email
-              );
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        userData.providerData.forEach((provider) => {
+          if (provider.email === email) {
+            userExists = true;
+          }
+        });
+      });
 
-              if (userExistsInGroup) {
-                Alert.alert("User is already in the group");
-                setIsButtonEnabled(true);
-                return;
-              }
+      if (userExists) {
+        const userExistsInGroup = room.users.some(
+          (user) => user.providerData[0].email === email
+        );
 
-              // Update the group chat with the new user
-              const updatedUsers = [...room.users, userData];
-              const updatedRoom = { ...room, users: updatedUsers };
-
-              await setDoc(doc(db, "chats", room.id), updatedRoom);
-
-              Alert.alert("User added to the group");
-              setEmail("");
-            } else {
-              Alert.alert("User with the specified email does not exist");
-              setIsButtonEnabled(true);
-            }
+        if (userExistsInGroup) {
+          Alert.alert("User is already in the group");
+          setIsButtonEnabled(true);
+          return;
+        }
+        const userData = querySnapshot.docs
+          .find((doc) => {
+            return doc
+              .data()
+              .providerData.some((provider) => provider.email === email);
           })
-          .catch((err) => {
-            console.log(err);
+          .data();
+        const updatedUsers = [...room.users, userData];
+        const updatedRoom = { ...room, users: updatedUsers };
+        setChatRoom([...chatRoom, userData]);
 
-            setIsButtonEnabled(true);
-          });
+        await setDoc(doc(db, "chats", room.id), updatedRoom);
+
+        Alert.alert("User added to the group");
+        setEmail("");
+      } else {
+        Alert.alert("User with the specified email does not exist");
       }
-    });
+    } catch (error) {
+      console.error("Error adding user to group:", error);
+      Alert.alert("Error", "An error occurred while adding user to the group");
+    } finally {
+      setIsButtonEnabled(true);
+    }
   };
 
   return (
@@ -111,7 +127,7 @@ export default function GroupOptions({ route, navigation }) {
       ) : null}
       <View style={styles.usersList}>
         <Text style={styles.usersHeader}>Users in Chat:</Text>
-        {usersInChat.map((user, index) => (
+        {chatRoom.map((user, index) => (
           <View
             key={index}
             style={{

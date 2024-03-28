@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
@@ -18,6 +19,7 @@ export default function SingleChat() {
   const currentUser = useSelector((state) => state.user.userData);
   const [email, setEmail] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const addUserToChat = async () => {
     if (!isButtonEnabled) return;
@@ -27,6 +29,7 @@ export default function SingleChat() {
       return;
     }
 
+    setIsLoading(true);
     setIsButtonEnabled(false);
 
     try {
@@ -46,6 +49,7 @@ export default function SingleChat() {
       if (!userDataTwo) {
         Alert.alert("User with the specified email does not exist");
         setIsButtonEnabled(true);
+        setIsLoading(false);
         return;
       }
 
@@ -53,21 +57,25 @@ export default function SingleChat() {
       const chatQuerySnapshot = await getDocs(chatsRef);
       const userInChatWithLoggedInUser = chatQuerySnapshot.docs.some((doc) => {
         const chatData = doc.data();
-        const chatUsers = chatData.users;
-        const loggedInUser = chatUsers.find(
-          (user) =>
-            user.providerData[0].email === currentUser.providerData[0].email
-        );
-        const searchedUser = chatUsers.find(
-          (user) => user.providerData[0].email === email
-        );
-        return loggedInUser && searchedUser;
+        if (chatData.chatIs === "person") {
+          const chatUsers = chatData.users;
+          const loggedInUser = chatUsers.find(
+            (user) =>
+              user.providerData[0].email === currentUser.providerData[0].email
+          );
+          const searchedUser = chatUsers.find(
+            (user) => user.providerData[0].email === email
+          );
+          return loggedInUser && searchedUser;
+        }
+        return false;
       });
 
       if (userInChatWithLoggedInUser) {
         Alert.alert(
           "User is already in a chat with the current logged-in user"
         );
+        setIsLoading(false);
         setIsButtonEnabled(true);
         return;
       }
@@ -81,47 +89,49 @@ export default function SingleChat() {
         chatName: chatName,
         chatIs: "person",
       };
-
-      console.log(
-        "🚀 ~ addUserToChat ~ chatDoc:",
-        chatDoc.users[0].currentUser
-      );
-      console.log(
-        "🚀 ~ addUserToChat ~ chatDoc:",
-        chatDoc.users[1].userDataTwo
-      );
       await setDoc(doc(db, "chats", id), chatDoc);
       navigation.reset({
         index: 0,
         routes: [{ name: "Chatter" }],
       });
+
+      setIsLoading(false);
     } catch (error) {
       Alert.alert("Error", "An error occurred: " + error.message);
       setIsButtonEnabled(true);
+      setIsLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <Ionicons name="mail" size={20} color={"gray"} />
-        <TextInput
-          placeholder="Enter user email"
-          placeholderTextColor={"gray"}
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-          style={styles.input}
-          autoCapitalize={"none"}
-        />
-        <TouchableOpacity
-          onPress={addUserToChat}
-          disabled={!isButtonEnabled}
-          style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
-        >
-          <FontAwesome name="send" size={20} color={"white"} />
-        </TouchableOpacity>
+    <>
+      {isLoading && (
+        <View style={styles.loading}>
+          <ActivityIndicator size={"large"} color={"red"} />
+        </View>
+      )}
+
+      <View style={styles.container}>
+        <View style={styles.inputContainer}>
+          <Ionicons name="mail" size={20} color={"gray"} />
+          <TextInput
+            placeholder="Enter user email"
+            placeholderTextColor={"gray"}
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+            style={styles.input}
+            autoCapitalize={"none"}
+          />
+          <TouchableOpacity
+            onPress={addUserToChat}
+            disabled={!isButtonEnabled}
+            style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
+          >
+            <FontAwesome name="send" size={20} color={"white"} />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -153,5 +163,15 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     backgroundColor: "#5cb85c",
+  },
+  loading: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "gray",
+    zIndex: 1,
+    opacity: 0.4,
   },
 });

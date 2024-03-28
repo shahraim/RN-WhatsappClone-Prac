@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
@@ -19,6 +20,7 @@ export default function GroupChats() {
   const [email, setEmail] = useState("");
   const [chatName, setChatName] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const addUserToChat = async () => {
     if (!isButtonEnabled) return;
@@ -29,6 +31,14 @@ export default function GroupChats() {
     }
 
     setIsButtonEnabled(false);
+    setIsLoading(true);
+
+    if (email === currentUser.providerData[0].email) {
+      alert("u cnt add your self");
+      setIsButtonEnabled(true);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const usersRef = collection(db, "users");
@@ -65,45 +75,55 @@ export default function GroupChats() {
         });
       } else {
         Alert.alert("User with the specified email does not exist");
+        setIsLoading(false);
       }
     } catch (error) {
       Alert.alert("Error", "An error occurred: " + error.message);
+      setIsLoading(false);
     } finally {
       setIsButtonEnabled(true);
+      setIsLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <Ionicons name="mail" size={20} color={"gray"} />
-        <TextInput
-          placeholder="Enter user email"
-          placeholderTextColor={"gray"}
-          value={email}
-          onChangeText={(text) => setEmail(text)}
-          style={styles.input}
-          autoCapitalize={"none"}
-        />
+    <>
+      {isLoading && (
+        <View style={styles.loading}>
+          <ActivityIndicator size={"large"} color={"red"} />
+        </View>
+      )}
+      <View style={styles.container}>
+        <View style={styles.inputContainer}>
+          <Ionicons name="mail" size={20} color={"gray"} />
+          <TextInput
+            placeholder="Enter user email"
+            placeholderTextColor={"gray"}
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+            style={styles.input}
+            autoCapitalize={"none"}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <Ionicons name="chatbox-sharp" size={20} color={"gray"} />
+          <TextInput
+            placeholder="Create chat name"
+            placeholderTextColor={"gray"}
+            value={chatName}
+            onChangeText={(text) => setChatName(text)}
+            style={[styles.input, { flex: 1 }]}
+          />
+          <TouchableOpacity
+            onPress={addUserToChat}
+            disabled={!isButtonEnabled}
+            style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
+          >
+            <FontAwesome name="send" size={20} color={"white"} />
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.inputContainer}>
-        <Ionicons name="chatbox-sharp" size={20} color={"gray"} />
-        <TextInput
-          placeholder="Create chat name"
-          placeholderTextColor={"gray"}
-          value={chatName}
-          onChangeText={(text) => setChatName(text)}
-          style={[styles.input, { flex: 1 }]}
-        />
-        <TouchableOpacity
-          onPress={addUserToChat}
-          disabled={!isButtonEnabled}
-          style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
-        >
-          <FontAwesome name="send" size={20} color={"white"} />
-        </TouchableOpacity>
-      </View>
-    </View>
+    </>
   );
 }
 
@@ -136,5 +156,15 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     backgroundColor: "#5cb85c",
+  },
+  loading: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "gray",
+    zIndex: 1,
+    opacity: 0.4,
   },
 });

@@ -56,6 +56,8 @@ export default function ChatMessages({ room }) {
         await deleteDoc(
           doc(db, `chats/${room.id}/messages`, selectedMessage._id)
         );
+      } else {
+        console.log("Cannot delete messages.");
       }
     } catch (error) {
       console.error("Error deleting message:", error);
@@ -63,8 +65,19 @@ export default function ChatMessages({ room }) {
   };
 
   const handleLongPress = (message) => {
-    setSelectedMessage(message);
-    setShowDeleteModal(true);
+    // const currentTime = new Date();
+    // const messageTime = new Date(selectedMessage?.timeStamp?.seconds * 1000);
+    // const differenceInHours = (currentTime - messageTime) / (1000 * 60 * 60);
+    // if (differenceInHours <= 1) {
+    // }
+    if (
+      message.user.providerData[0].email === currentUser.providerData[0].email
+    ) {
+      setSelectedMessage(message);
+      setShowDeleteModal(true);
+    } else {
+      console.log("You can only delete your own messages.");
+    }
   };
 
   const scrollToBottom = () => {

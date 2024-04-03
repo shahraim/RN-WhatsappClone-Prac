@@ -254,9 +254,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   editProfile: {
-    // position: "absolute",
-    // top: 10,
-    // right: 10,
     width: 80,
     flexDirection: "row",
     justifyContent: "center",
@@ -267,36 +264,3 @@ const styles = StyleSheet.create({
     padding: 5,
   },
 });
-
-// const [modalVisible, setModalVisible] = useState(false);
-// const pickImage = async () => {
-//   let result = await ImagePicker.launchImageLibraryAsync({
-//     mediaTypes: ImagePicker.MediaTypeOptions.All,
-//     allowsEditing: true,
-//     quality: 1,
-//   });
-
-//   if (!result.cancelled) {
-//     setImageUrl([...imageUrl, result.assets[0].uri]);
-//   }
-// };
-{
-  /* <Modal
-animationType="slide"
-transparent={true}
-visible={modalVisible}
-onRequestClose={() => {
-  setModalVisible(false);
-  }}
->
-  <View style={styles.centeredView}>
-    <View style={styles.modalView}>
-      <Button title="Select Image" onPress={pickImage} />
-      <Button title="Close" onPress={() => setModalVisible(false)} />
-    </View>
-  </View>
-</Modal> */
-}
-{
-  /* Delete Chat Modal */
-}

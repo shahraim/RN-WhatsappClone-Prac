@@ -73,7 +73,6 @@ export default function SignUp({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollView}>
-      <Ionicons name=""/>
       <View style={styles.container}>
         {isAvatar && (
           <View style={[styles.overlay]}>
@@ -100,6 +99,13 @@ export default function SignUp({ navigation }) {
             </ScrollView>
           </View>
         )}
+        <TouchableOpacity
+          style={styles.arrowBack}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={20} />
+        </TouchableOpacity>
+
         <View style={styles.gap}>
           <TouchableOpacity
             style={styles.avatarContainer}
@@ -286,5 +292,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: "#797C7B",
     fontFamily: "light",
+  },
+  arrowBack: {
+    position: "absolute",
+    top: 60,
+    left: 20,
   },
 });

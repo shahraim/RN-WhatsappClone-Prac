@@ -30,8 +30,16 @@ function MainNavigator() {
           options={{ headerShown: false }}
           component={SplashScreen}
         />
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="SignUp"
+          component={SignUp}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Profile" component={UserProfile} />
         <Stack.Screen name="GroupChats" component={GroupChats} />
         <Stack.Screen name="SingleChat" component={SingleChat} />

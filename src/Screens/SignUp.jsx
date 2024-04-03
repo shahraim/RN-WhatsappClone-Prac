@@ -16,6 +16,7 @@ import { avatars } from "../Utils/Avatar";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../Config/Firebase.config";
 import { doc, setDoc } from "firebase/firestore";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 
 export default function SignUp({ navigation }) {
   const [name, setName] = useState("");
@@ -24,8 +25,9 @@ export default function SignUp({ navigation }) {
   const [password, setPassword] = useState("");
   const [isAvatar, setIsAvatar] = useState(false);
   const [isProgress, setIsProgress] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessageALert, setErrorMessageAlert] = useState(false);
   const [avatar, setAvatar] = useState(avatars[0]?.image.asset.url);
-  const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
   const handleAvatar = (item) => {
     setAvatar(item?.image.asset.url);
@@ -51,86 +53,118 @@ export default function SignUp({ navigation }) {
             routes: [{ name: "Login" }],
           });
           setIsProgress(false);
+          setErrorMessageAlert(false);
         });
       })
       .catch((error) => {
         const errorCode = error.code;
-        const errorMessage = error.message;
-        alert(errorMessage);
+        const errorMess = error.message;
+        if (name === "") {
+          setErrorMessage("name is required");
+        } else if (errorMess.includes("email")) {
+          setErrorMessage("email is empty or already exist");
+        } else if (errorMess.includes("password")) {
+          setErrorMessage("password is incorrect");
+        }
+        setErrorMessageAlert(true);
         setIsProgress(false);
       });
   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollView}>
+      <Ionicons name=""/>
       <View style={styles.container}>
         {isAvatar && (
-          <View
-            style={[
-              styles.overlay,
-              { width: screenWidth, height: screenHeight },
-            ]}
-          >
-            <BlurView
-              intensity={90}
-              style={[
-                styles.blurView,
-                { width: screenWidth, height: screenHeight },
-              ]}
-              tint="systemMaterialDark"
-            >
-              {avatars?.map((el) => (
-                <TouchableOpacity
-                  key={el._id}
-                  style={styles.imgAvatar}
-                  onPress={() => handleAvatar(el)}
-                >
-                  <Image
-                    source={{ uri: el?.image.asset.url }}
-                    style={styles.avatarImage}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              ))}
-            </BlurView>
+          <View style={[styles.overlay]}>
+            <ScrollView>
+              <BlurView
+                intensity={90}
+                style={[styles.blurView]}
+                tint="systemMaterialDark"
+              >
+                {avatars?.map((el) => (
+                  <TouchableOpacity
+                    key={el._id}
+                    style={styles.imgAvatar}
+                    onPress={() => handleAvatar(el)}
+                  >
+                    <Image
+                      source={{ uri: el?.image.asset.url }}
+                      style={styles.avatarImage}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </BlurView>
+            </ScrollView>
           </View>
         )}
-        <TouchableOpacity
-          style={styles.avatarContainer}
-          onPress={() => setIsAvatar(true)}
-        >
-          <Image
-            source={{ uri: avatar }}
-            resizeMode="contain"
-            style={styles.avatar}
-          />
-        </TouchableOpacity>
-        <UserInputs
-          placeholder={"Full Name"}
-          isPass={false}
-          setStateValue={setName}
-        />
-        <UserInputs
-          placeholder={"Email"}
-          isPass={false}
-          setStateValue={setEmail}
-          setEmailIsValid={setEmailIsValid}
-        />
-        <UserInputs
-          placeholder={"Password"}
-          isPass={true}
-          setStateValue={setPassword}
-        />
-        <TouchableOpacity style={styles.signUpButton} onPress={handleSingUp}>
-          <Text style={styles.signUpButtonText}>
-            {isProgress ? <ActivityIndicator color={"gray"} /> : "Sign Up"}
-          </Text>
-        </TouchableOpacity>
-        <View style={styles.bottomTextContainer}>
-          <Text style={styles.bottomText}>Already have an account?</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.loginText}>Login</Text>
+        <View style={styles.gap}>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            onPress={() => setIsAvatar(true)}
+          >
+            <FontAwesome
+              style={styles.avatarIcon}
+              name="pencil"
+              size={15}
+              color="#3D4A7A"
+            />
+            <Image
+              source={{ uri: avatar }}
+              resizeMode="contain"
+              style={styles.avatar}
+            />
           </TouchableOpacity>
+          <View style={styles.loginTitleArea}>
+            <Text style={styles.loginTitle}> Sign up with Email</Text>
+            <Text style={styles.loginTitlePara}>
+              Get chatting with friends and family today by signing up for our
+              chat app!
+            </Text>
+          </View>
+          <UserInputs
+            label={"Full Name"}
+            isPass={false}
+            setStateValue={setName}
+          />
+          <UserInputs
+            label={"Your Email"}
+            isPass={false}
+            setStateValue={setEmail}
+            setEmailIsValid={setEmailIsValid}
+          />
+          <UserInputs
+            label={"Password"}
+            isPass={true}
+            setStateValue={setPassword}
+          />
+          {errorMessageALert ? (
+            <Text style={{ color: "red" }}>{errorMessage}</Text>
+          ) : null}
+        </View>
+        <View style={styles.gap}>
+          <TouchableOpacity onPress={handleSingUp} style={styles.loginButton}>
+            <Text style={styles.loginButtonText}>
+              {isProgress ? <ActivityIndicator color={"gray"} /> : "Sign Up"}
+            </Text>
+            <Image
+              style={styles.loginImg}
+              source={require("../../assets/Rectangle 1159.png")}
+            />
+          </TouchableOpacity>
+          <View style={styles.signUpContainer}>
+            <Text style={styles.signUpText}>Already have an account?</Text>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("Login");
+                setErrorMessageAlert(false);
+              }}
+            >
+              <Text style={styles.signUpLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </ScrollView>
@@ -142,11 +176,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   container: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 40,
+    height: "100%",
+    gap: 50,
+    backgroundColor: "#fff",
+    paddingVertical: 30,
   },
   overlay: {
     position: "absolute",
@@ -165,13 +200,22 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   avatarContainer: {
-    marginBottom: 20,
+    position: "relative",
+  },
+  avatarIcon: {
+    position: "absolute",
+    zIndex: 1,
+    right: -2,
+    top: 0,
+    backgroundColor: "#fff",
+    borderRadius: 100,
+    padding: 3,
   },
   avatar: {
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     borderWidth: 2,
-    borderColor: "gray",
+    borderColor: "#3D4A7A",
     borderRadius: 40,
   },
   avatarImage: {
@@ -182,30 +226,65 @@ const styles = StyleSheet.create({
   imgAvatar: {
     margin: 15,
   },
-  signUpButton: {
-    width: "100%",
+
+  loginImg: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: -1,
+  },
+
+  loginButton: {
+    width: 327,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#4CAF50",
     paddingVertical: 12,
     borderRadius: 25,
-    marginTop: 20,
+    position: "relative",
   },
-  signUpButtonText: {
-    color: "white",
-    fontWeight: "bold",
+  loginButtonText: {
+    color: "#FFFFFF",
     fontSize: 16,
+    fontFamily: "bold",
   },
-  bottomTextContainer: {
+  signUpContainer: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 20,
   },
-  bottomText: {
+  signUpText: {
+    color: "#555",
     marginRight: 5,
   },
-  loginText: {
-    fontWeight: "bold",
-    color: "#4CAF50",
+  signUpLink: {
+    fontSize: 14,
+    fontFamily: "medium",
+    color: "#3D4A7A",
+    textDecorationLine: "underline",
+  },
+
+  gap: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+  },
+
+  loginTitleArea: {
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 10,
+  },
+  loginTitle: {
+    fontSize: 18,
+    color: "#3D4A7A",
+    fontFamily: "bold",
+  },
+  loginTitlePara: {
+    width: 293,
+    textAlign: "center",
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#797C7B",
+    fontFamily: "light",
   },
 });

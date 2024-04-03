@@ -7,9 +7,10 @@ import {
 } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { useFonts } from "expo-font";
 
 export default function UserInputs({
-  placeholder,
+  label,
   isPass,
   setStateValue,
   setEmailIsValid,
@@ -21,7 +22,7 @@ export default function UserInputs({
 
   const handleGetValue = (text) => {
     setValue(text);
-    if (placeholder === "Email") {
+    if (label === "Your Email") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const status = emailRegex.test(text);
       setEmailValid(status);
@@ -29,13 +30,19 @@ export default function UserInputs({
     }
     setStateValue(text);
   };
+  const [loaded] = useFonts({
+    medium: require("../../assets/fonts/Poppins-Medium.ttf"),
+  });
+  if (!loaded) {
+    return null;
+  }
 
   useLayoutEffect(() => {
-    switch (placeholder) {
+    switch (label) {
       case "Full Name":
         setIcon("person");
         break;
-      case "Email":
+      case "Your Email":
         setIcon("mail");
         break;
       case "Password":
@@ -44,7 +51,7 @@ export default function UserInputs({
       default:
         break;
     }
-  }, [placeholder]);
+  }, [label]);
 
   useEffect(() => {
     setStateValue("");
@@ -52,32 +59,38 @@ export default function UserInputs({
   }, []);
 
   return (
-    <View
-      style={[
-        styles.container,
-        !emailValid &&
-          placeholder === "Email" &&
-          value.length > 0 && {
-            borderColor: "red",
-          },
-      ]}
-    >
-      <View style={styles.inputContainer}>
-        <MaterialIcons name={icon} color="#000" size={18} />
-        <TextInput
-          style={styles.input}
-          placeholder={placeholder}
-          value={value}
-          onChangeText={handleGetValue}
-          secureTextEntry={isPass && passChange}
-          autoCapitalize={placeholder === "Email" ? "none" : "sentences"}
-        />
+    <View style={styles.mainInput}>
+      <Text style={styles.inputLabel}>{label}</Text>
+      <View
+        style={[
+          styles.container,
+          !emailValid &&
+            label === "Your Email" &&
+            value.length > 0 && {
+              borderColor: "red",
+            },
+        ]}
+      >
+        <View style={styles.inputContainer}>
+          <MaterialIcons name={icon} color="#000" size={18} />
+          <TextInput
+            style={styles.input}
+            value={value}
+            onChangeText={handleGetValue}
+            secureTextEntry={isPass && passChange}
+            autoCapitalize={label === "Your Email" ? "none" : "sentences"}
+          />
+        </View>
+        {isPass && (
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setPassChange(!passChange)}
+          >
+            <FontAwesome name={passChange ? "eye" : "eye-slash"} color="#000" />
+          </TouchableOpacity>
+        )}
       </View>
-      {isPass && (
-        <TouchableOpacity onPress={() => setPassChange(!passChange)}>
-          <FontAwesome name={passChange ? "eye" : "eye-slash"} color="#000" />
-        </TouchableOpacity>
-      )}
+      
     </View>
   );
 }
@@ -86,21 +99,38 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10,
-    height: 50,
-    width: "100%",
-    borderWidth: 1,
+    width: 370,
+    height: 45,
+    borderBottomWidth: 1,
     borderRadius: 8,
     borderColor: "gray",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     gap: 10,
+    paddingLeft: 10,
   },
   input: {
     height: "100%",
-    width: "80%",
+    width: "85%",
+  },
+  mainInput: {
+    height: 65,
+    marginVertical: 10,
+  },
+  inputLabel: {
+    fontSize: 14,
+    lineHeight: 16,
+    letterSpacing: 0.1,
+    fontFamily: "medium",
+    color: "#3D4A7A",
+    marginLeft: 6,
+  },
+  eyeIcon: {
+    width: 25,
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

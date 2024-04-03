@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -24,13 +26,23 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "fonts": {
+      "poppins": {
+        "normal": "./assets/fonts/Poppins-Regular.ttf",
+        "light": "./assets/fonts/Poppins-Light.ttf",
+        "bold": "./assets/fonts/Poppins-Bold.ttf",
+        "italic": "./assets/fonts/Poppins-Italic.ttf",
+        "boldItalic": "./assets/fonts/Poppins-BoldItalic.ttf"
+      }
+    },
     "plugins": [
       [
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

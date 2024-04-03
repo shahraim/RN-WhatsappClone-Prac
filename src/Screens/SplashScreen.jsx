@@ -34,7 +34,22 @@ export default function SplashScreen({ navigation }) {
 
   return (
     <View style={styles.main}>
-      <Image source={require("../../assets/Animation - 1711474463753.gif")} />
+      <Image
+        style={styles.spalshImg}
+        source={require("../../assets/Splash.jpg")}
+        resizeMode="cover"
+      />
+      <View style={styles.mainName}>
+        <Image
+          style={styles.spalshIcon}
+          source={require("../../assets/Vector.png")}
+        />
+        <Image
+          style={styles.appName}
+          source={require("../../assets/Chatter-4-1-2024.png")}
+          resizeMode="contain"
+        />
+      </View>
     </View>
   );
 }
@@ -44,5 +59,26 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    position: "relative",
+  },
+  spalshImg: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
+  mainName: {
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  spalshIcon: {
+    position: "absolute",
+  },
+  appName: {
+    // fontSize: 30,
+    position: "absolute",
+    top: -130,
+    width: 200,
+    height: 200,
   },
 });

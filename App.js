@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import MainNavigator from "./src/Config/navigation";
 import { Provider } from "react-redux";
 import { store } from "./src/Config/toolkit/store";
+import "react-native-gesture-handler";
 
 export default function App() {
   const [statusBarStyle, setStatusBarStyle] = useState("light");

@@ -12,6 +12,11 @@ import {
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import {
+  TapGestureHandler,
+  RotationGestureHandler,
+} from "react-native-gesture-handler";
+
+import {
   collection,
   query,
   orderBy,
@@ -25,7 +30,7 @@ import { doc, deleteDoc } from "firebase/firestore";
 import { useSelector } from "react-redux";
 import { MaterialIcons } from "@expo/vector-icons";
 
-const MAX_MESSAGE_LENGTH = 50;
+const MAX_MESSAGE_LENGTH = 35;
 
 export default function Messages({ chat }) {
   const navigation = useNavigation();
@@ -117,90 +122,100 @@ export default function Messages({ chat }) {
   };
 
   return (
-    <View style={styles.chatItem}>
-      <TouchableOpacity onPress={() => setIsClicked(!isClicked)}>
-        <Image
-          source={{
-            uri:
-              chat.chatIs === "person" && chat.users.length === 2
-                ? chat.users.find(
-                    (user) =>
-                      user.providerData[0].email !==
-                      currentUser.providerData[0].email
-                  )?.profilePic || ""
-                : chat.groupIcon,
-          }}
-          style={styles.avatar}
-          resizeMode="cover"
-        />
-      </TouchableOpacity>
-      <View style={styles.chatContent}>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate(
-              "ChatScreen",
-              { room: chat },
-              setIsClicked(false)
-            )
-          }
-        >
-          <Text style={styles.chatName}>
-            {chat.chatName === currentUser.fullName &&
-            chat.chatName !== mainUser.fullName
-              ? chat.users
-                  .filter(
-                    (user) =>
-                      user.providerData[0].email !==
-                      currentUser.providerData[0].email
-                  )
-                  .map((user) => user.fullName)
-                  .join(", ")
-              : chat.chatName}
-          </Text>
-          <Text style={styles.chatMessage}>
-            {lastMessage ? lastMessage : "Start conversation"}
-          </Text>
+    <View>
+      <View style={styles.chatItem}>
+        <TouchableOpacity onPress={() => setIsClicked(!isClicked)}>
+          <Image
+            source={{
+              uri:
+                chat.chatIs === "person" && chat.users.length === 2
+                  ? chat.users.find(
+                      (user) =>
+                        user.providerData[0].email !==
+                        currentUser.providerData[0].email
+                    )?.profilePic || ""
+                  : chat.groupIcon,
+            }}
+            style={styles.avatar}
+            resizeMode="cover"
+          />
         </TouchableOpacity>
-      </View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showDeleteModal}
-        onRequestClose={() => setShowDeleteModal(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setShowDeleteModal(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.deleteModal}>
-              <Text style={styles.deleteMessage}>Delete Chat?</Text>
-              <View style={styles.deleteButtonContainer}>
-                <Button
-                  title="Cancel"
-                  onPress={() => setShowDeleteModal(false)}
-                />
-                <Button title="Delete" onPress={handleDeleteChat} color="red" />
+        <View style={styles.chatContent}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate(
+                "ChatScreen",
+                { room: chat },
+                setIsClicked(false)
+              )
+            }
+          >
+            <Text style={styles.chatName}>
+              {chat.chatName === currentUser.fullName &&
+              chat.chatName !== mainUser.fullName
+                ? chat.users
+                    .filter(
+                      (user) =>
+                        user.providerData[0].email !==
+                        currentUser.providerData[0].email
+                    )
+                    .map((user) => user.fullName)
+                    .join(", ")
+                : chat.chatName}
+            </Text>
+            <Text style={styles.chatMessage}>
+              {lastMessage ? lastMessage : "Start conversation"}
+            </Text>
+            <View style={styles.chatImp}>
+              <Text style={styles.lastMessageTime}>2 min ago</Text>
+              <Text style={styles.unReadMessage}>5</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showDeleteModal}
+          onRequestClose={() => setShowDeleteModal(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setShowDeleteModal(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.deleteModal}>
+                <Text style={styles.deleteMessage}>Delete Chat?</Text>
+                <View style={styles.deleteButtonContainer}>
+                  <Button
+                    title="Cancel"
+                    onPress={() => setShowDeleteModal(false)}
+                  />
+                  <Button
+                    title="Delete"
+                    onPress={handleDeleteChat}
+                    color="red"
+                  />
+                </View>
               </View>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-      {isClicked && (
-        <View style={styles.editProfile}>
-          <TouchableOpacity
-            onPress={() => setShowDeleteModal(true)}
-            style={styles.delteBtn}
-          >
-            <MaterialIcons name="delete" size={24} color="white" />
-          </TouchableOpacity>
-          {chat.chatIs === "group" && (
+          </TouchableWithoutFeedback>
+        </Modal>
+        {isClicked && (
+          <View style={styles.editProfile}>
             <TouchableOpacity
-              onPress={handleEditProfile}
-              style={styles.editBtn}
+              onPress={() => setShowDeleteModal(true)}
+              style={styles.delteBtn}
             >
-              <MaterialIcons name="edit" size={24} color="white" />
+              <MaterialIcons name="delete" size={24} color="white" />
             </TouchableOpacity>
-          )}
-        </View>
-      )}
+            {chat.chatIs === "group" && (
+              <TouchableOpacity
+                onPress={handleEditProfile}
+                style={styles.editBtn}
+              >
+                <MaterialIcons name="edit" size={24} color="white" />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -209,12 +224,14 @@ const styles = StyleSheet.create({
   chatItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 18,
+    marginBottom: 15,
     position: "relative",
+    borderRadius: 30,
+    paddingVertical: 4,
   },
   avatar: {
-    width: 50,
-    height: 50,
+    width: 52,
+    height: 52,
     marginRight: 10,
     borderWidth: 1,
     borderColor: "green",
@@ -224,12 +241,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   chatName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
   },
   chatMessage: {
     fontSize: 14,
-    color: "#666",
+    color: "#888",
   },
   modalOverlay: {
     flex: 1,
@@ -262,5 +279,22 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.4)",
     borderRadius: 20,
     padding: 5,
+  },
+  chatImp: {
+    position: "absolute",
+    right: 5,
+    alignItems: "center",
+    gap: 3,
+  },
+  lastMessageTime: {
+    fontSize: 12,
+    color: "gray",
+  },
+  unReadMessage: {
+    backgroundColor: "red",
+    borderRadius: 100,
+    color: "white",
+    paddingHorizontal: 6,
+    paddingVertical: 1,
   },
 });

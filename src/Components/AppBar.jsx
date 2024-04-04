@@ -9,6 +9,7 @@ export default function AppBar() {
   const navigation = useNavigation();
   const [loaded] = useFonts({
     medium: require("../../assets/fonts/Poppins-Medium.ttf"),
+    regular: require("../../assets/fonts/Poppins-Regular.ttf"),
   });
   if (!loaded) {
     return null;
@@ -108,6 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
     color: "#fff",
+    fontFamily: "regular",
   },
   searchBtn: {
     backgroundColor: "rgba(128,128,128,0.5)",

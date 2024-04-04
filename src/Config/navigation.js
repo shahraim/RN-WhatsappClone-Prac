@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
     overflow: "hidden",
+    backgroundColor: "#fff",
   },
   topBar: {
     backgroundColor: "#fff",

@@ -40,16 +40,6 @@ export default function Chats({ navigation }) {
     return unSubscribe;
   }, []);
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      position: "relative",
-      backgroundColor: "#fff",
-    },
-    chatsContainer: {
-      padding: 15,
-    },
-  });
   const closeOptions = () => {
     setIsChatClicked(false);
   };
@@ -61,7 +51,7 @@ export default function Chats({ navigation }) {
           <View style={styles.chatsContainer}>
             {isLoading ? (
               <ActivityIndicator size={"large"} color={"red"} />
-            ) : (
+              ) : (
               <>
                 {chats && chats.length > 0 ? (
                   chats.map((el, ind) => {
@@ -78,7 +68,7 @@ export default function Chats({ navigation }) {
                   })
                 ) : (
                   <Text style={{ textAlign: "center" }}>No Chats</Text>
-                )}
+                  )}
               </>
             )}
           </View>
@@ -87,3 +77,14 @@ export default function Chats({ navigation }) {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: "relative",
+    backgroundColor: "#fff",
+  },
+  chatsContainer: {
+    padding: 15,
+  },
+});

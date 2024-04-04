@@ -135,7 +135,12 @@ export default function ChatMessages({ room }) {
                       <Text style={styles.messageText}>{el.message}</Text>
                     </View>
                     {el?.timeStamp ? (
-                      <Text style={{ fontSize: 10, color: "gray" }}>
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          color: "gray",
+                        }}
+                      >
                         {new Date(
                           parseInt(el?.timeStamp?.seconds) * 1000
                         ).toLocaleTimeString("en-US", {

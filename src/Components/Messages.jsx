@@ -12,11 +12,6 @@ import {
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import {
-  TapGestureHandler,
-  RotationGestureHandler,
-} from "react-native-gesture-handler";
-
-import {
   collection,
   query,
   orderBy,
@@ -29,6 +24,7 @@ import { db } from "../Config/Firebase.config";
 import { doc, deleteDoc } from "firebase/firestore";
 import { useSelector } from "react-redux";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useFonts } from "expo-font";
 
 const MAX_MESSAGE_LENGTH = 35;
 
@@ -40,6 +36,14 @@ export default function Messages({ chat }) {
   const currentUser = useSelector((state) => state.user.userData);
   const [lastMessage, setLastMessage] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+
+  const [loaded] = useFonts({
+    regular: require("../../assets/fonts/Poppins-Regular.ttf"),
+    medium: require("../../assets/fonts/Poppins-Medium.ttf"),
+  });
+  if (!loaded) {
+    return null;
+  }
 
   const fetchLastMessage = useCallback(async () => {
     const messagesRef = collection(db, `chats/${chat.id}/messages`);
@@ -142,6 +146,7 @@ export default function Messages({ chat }) {
         </TouchableOpacity>
         <View style={styles.chatContent}>
           <TouchableOpacity
+            style={styles.userNameInfo}
             onPress={() =>
               navigation.navigate(
                 "ChatScreen",
@@ -240,13 +245,17 @@ const styles = StyleSheet.create({
   chatContent: {
     flex: 1,
   },
+  userNameInfo: {
+    gap: -4,
+  },
   chatName: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "medium",
   },
   chatMessage: {
-    fontSize: 14,
-    color: "#888",
+    fontSize: 12,
+    fontFamily: "regular",
+    color: "#797C7B",
   },
   modalOverlay: {
     flex: 1,

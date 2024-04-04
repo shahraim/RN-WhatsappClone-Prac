@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Modal,
   Button,
+  TouchableOpacityComponent,
 } from "react-native";
 import {
   collection,
@@ -20,6 +21,70 @@ import {
 } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
 import { useSelector } from "react-redux";
+import { useFonts } from "expo-font";
+
+// Sender message component
+const SenderMessage = ({ message }) => {
+  return (
+    <View style={[styles.messageContainer, styles.senderMessageContainer]}>
+      <View style={styles.messageArea}>
+        <View style={styles.senderMainMessage}>
+          <Text style={[styles.messageText, styles.senderMessageText]}>
+            {message.message}
+          </Text>
+        </View>
+        <View style={{ alignSelf: "flex-end", marginTop: 1 }}>
+          <Text style={{ fontSize: 10, color: "gray" }}>
+            {message?.timeStamp
+              ? new Date(message.timeStamp.seconds * 1000).toLocaleTimeString(
+                  "en-US",
+                  {
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  }
+                )
+              : "sending"}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+// Receiver message component
+const ReceiverMessage = ({ message }) => {
+  return (
+    <View style={[styles.messageContainer, styles.receiverMessageContainer]}>
+      <Image
+        source={{ uri: message?.user?.profilePic }}
+        width={38}
+        height={38}
+        style={styles.receiverMessageImg}
+      />
+      <View style={styles.messageArea}>
+        <Text style={styles.userName}>{message?.user?.fullName}</Text>
+        <View style={styles.recieverMainMessage}>
+          <Text style={styles.messageText}>{message.message}</Text>
+        </View>
+        <View style={{ alignSelf: "flex-end", marginTop: 1 }}>
+          <Text style={{ fontSize: 10, color: "gray" }}>
+            {message?.timeStamp
+              ? new Date(message.timeStamp.seconds * 1000).toLocaleTimeString(
+                  "en-US",
+                  {
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  }
+                )
+              : "sending"}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 export default function ChatMessages({ room }) {
   const scrollViewRef = useRef();
@@ -49,6 +114,14 @@ export default function ChatMessages({ room }) {
     scrollToBottom();
   }, [allMessages]);
 
+  const [loaded] = useFonts({
+    regular: require("../../assets/fonts/Poppins-Regular.ttf"),
+    medium: require("../../assets/fonts/Poppins-Medium.ttf"),
+  });
+  if (!loaded) {
+    return null;
+  }
+
   const onDeleteMessage = async () => {
     try {
       if (selectedMessage) {
@@ -65,11 +138,6 @@ export default function ChatMessages({ room }) {
   };
 
   const handleLongPress = (message) => {
-    // const currentTime = new Date();
-    // const messageTime = new Date(selectedMessage?.timeStamp?.seconds * 1000);
-    // const differenceInHours = (currentTime - messageTime) / (1000 * 60 * 60);
-    // if (differenceInHours <= 1) {
-    // }
     if (
       message.user.providerData[0].email === currentUser.providerData[0].email
     ) {
@@ -85,6 +153,7 @@ export default function ChatMessages({ room }) {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
   };
+
   return (
     <>
       <ScrollView
@@ -94,68 +163,18 @@ export default function ChatMessages({ room }) {
       >
         {!isLoading ? (
           <View style={{ marginVertical: 10, position: "relative" }}>
-            {allMessages?.map((el, ind) => (
+            {allMessages?.map((message, index) => (
               <TouchableOpacity
-                key={ind}
+                key={index}
                 onPress={() => setShowDeleteModal(false)}
-                onLongPress={() => handleLongPress(el)}
+                onLongPress={() => handleLongPress(message)}
               >
-                <View
-                  key={ind}
-                  style={[
-                    { margin: 8 },
-                    el.user?.providerData[0]?.email ===
-                    currentUser?.providerData[0].email
-                      ? styles.senderMessageContainer
-                      : styles.receiverMessageContainer,
-                  ]}
-                >
-                  <Image
-                    source={{ uri: el?.user?.profilePic }}
-                    width={25}
-                    height={25}
-                    style={[
-                      el.user?.providerData[0]?.email ===
-                      currentUser?.providerData[0].email
-                        ? styles.senderMessageImg
-                        : styles.receiverMessageImg,
-                    ]}
-                  />
-                  <View style={styles.messageArea}>
-                    <View
-                      style={[
-                        styles.messageContainer,
-                        el.user?.providerData[0]?.email ===
-                        currentUser?.providerData[0].email
-                          ? styles.senderMainMessage
-                          : styles.recieverMainMessage,
-                      ]}
-                    >
-                      <Text style={styles.userName}>{el.user?.fullName}</Text>
-                      <Text style={styles.messageText}>{el.message}</Text>
-                    </View>
-                    {el?.timeStamp ? (
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          color: "gray",
-                        }}
-                      >
-                        {new Date(
-                          parseInt(el?.timeStamp?.seconds) * 1000
-                        ).toLocaleTimeString("en-US", {
-                          hour: "numeric",
-                          minute: "numeric",
-                          hour12: true,
-                        })}
-                      </Text>
-                    ) : (
-                      <Text style={{ fontSize: 10, color: "gray" }}>
-                        sending
-                      </Text>
-                    )}
-                  </View>
-                </View>
+                {message.user.providerData[0].email ===
+                currentUser.providerData[0].email ? (
+                  <SenderMessage message={message} key={index} />
+                ) : (
+                  <ReceiverMessage message={message} key={index} />
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -198,40 +217,42 @@ export default function ChatMessages({ room }) {
 
 const styles = StyleSheet.create({
   messageContainer: {
-    // maxWidth: "80%",
     padding: 8,
-    borderRadius: 10,
+    maxWidth: 300,
+    flexDirection: "row",
   },
   senderMessageContainer: {
     alignSelf: "flex-end",
   },
-  senderMessageImg: {
-    display: "none",
-  },
   receiverMessageContainer: {
     alignSelf: "flex-start",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
   },
-  // senderMessageText: {
-  //   backgroundColor: "#DCF8C5",
-  // },
-  // receiverMessageText: {
-  //   backgroundColor: "#E8E8E8",
-  //   marginLeft: 3,
-  // },
   senderMainMessage: {
-    backgroundColor: "#DCF8C5",
+    backgroundColor: "#3D4A7A",
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   recieverMainMessage: {
     backgroundColor: "#E8E8E8",
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
   receiverMessageImg: {
-    alignSelf: "flex-start",
+    marginHorizontal: 5,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
   },
   messageText: {
-    color: "#000",
+    color: "#000E08",
+    fontFamily: "regular",
+    fontSize: 12,
   },
   messageArea: {
     justifyContent: "center",
@@ -239,9 +260,10 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   userName: {
-    fontSize: 10,
-    color: "gray",
+    fontSize: 13,
+    color: "#000E08",
     marginLeft: 3,
+    fontFamily: "medium",
   },
   modalOverlay: {
     flex: 1,
@@ -262,5 +284,8 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: "row",
     justifyContent: "space-around",
+  },
+  senderMessageText: {
+    color: "#fff",
   },
 });

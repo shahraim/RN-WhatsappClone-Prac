@@ -1,5 +1,12 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { Ionicons, FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import ChatBody from "../Components/ChatBody";

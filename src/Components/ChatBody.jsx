@@ -70,11 +70,11 @@ export default function ChatBody({ room }) {
           style={styles.morePin}
           onPress={() => setModalVisible(true)}
         >
-          <FontAwesome name="paperclip" size={22} color="rgba(0, 14, 8, 0.5)" />
+          <FontAwesome name="paperclip" size={22} color="rgba(0, 14, 8, 0.7)" />
         </TouchableOpacity>
         <View style={styles.inputArea}>
           <TouchableOpacity style={styles.emojiButton}>
-            <Entypo name="emoji-happy" size={20} color="rgba(0, 14, 8, 0.5)" />
+            <FontAwesome name="smile-o" size={20} color="rgba(0, 14, 8, 0.7)" />
           </TouchableOpacity>
           <TextInput
             style={styles.input}
@@ -86,10 +86,10 @@ export default function ChatBody({ room }) {
           />
         </View>
         <TouchableOpacity style={styles.micButton} onPress={sendMessage}>
-          <Ionicons name="mic-outline" size={25} color="rgba(0, 14, 8, 0.5)" />
+          <Ionicons name="mic-outline" size={25} color="rgba(0, 14, 8, 0.7)" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <FontAwesome name="send-o" size={20} color="rgba(0, 14, 8, 0.5)" />
+          <FontAwesome name="send-o" size={20} color="rgba(0, 14, 8, 0.7)" />
         </TouchableOpacity>
       </KeyboardAvoidingView>
 
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 17,
-    paddingVertical: 13,
+    paddingVertical: 18,
     borderTopWidth: 1,
     borderTopColor: "#eee",
     backgroundColor: "#fff",
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   optionSubtext: {
     fontSize: 12,
-    color: "rgba(121,124,123,0.5)",
+    color: "rgba(121,124,123,0.7)",
     fontFamily: "regular",
   },
   icon: {

@@ -186,7 +186,7 @@ export default function ChatMessages({ room }) {
               height: "100%",
             }}
           >
-            <ActivityIndicator size="large" color="#fff" />
+            <ActivityIndicator size="large" color="#000" />
           </View>
         )}
       </ScrollView>

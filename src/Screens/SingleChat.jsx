@@ -7,19 +7,29 @@ import {
   View,
   Alert,
   ActivityIndicator,
+  Modal, // Import Modal component
 } from "react-native";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { doc, getDocs, setDoc, collection } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
 import { useNavigation } from "@react-navigation/native";
+import { useFonts } from "expo-font";
 
-export default function SingleChat() {
+export default function SingleChatModal() {
   const navigation = useNavigation();
   const currentUser = useSelector((state) => state.user.userData);
   const [email, setEmail] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [loaded] = useFonts({
+    medium: require("../../assets/fonts/Poppins-Medium.ttf"),
+    regular: require("../../assets/fonts/Poppins-Regular.ttf"),
+  });
+  if (!loaded) {
+    return null;
+  }
 
   const addUserToChat = async () => {
     if (!isButtonEnabled) return;
@@ -105,31 +115,46 @@ export default function SingleChat() {
 
   return (
     <>
-      {isLoading && (
-        <View style={styles.loading}>
-          <ActivityIndicator size={"large"} color={"red"} />
-        </View>
-      )}
-
       <View style={styles.container}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="mail" size={20} color={"gray"} />
-          <TextInput
-            placeholder="Enter user email"
-            placeholderTextColor={"gray"}
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-            style={styles.input}
-            autoCapitalize={"none"}
-          />
-          <TouchableOpacity
-            onPress={addUserToChat}
-            disabled={!isButtonEnabled}
-            style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
-          >
-            <FontAwesome name="send" size={20} color={"white"} />
-          </TouchableOpacity>
+        <View>
+          <Text style={styles.singleTitle}>Create a Chat</Text>
         </View>
+        <View style={styles.mainInput}>
+          <Text style={styles.inputLabel}>Email</Text>
+          <View style={[styles.undrContain]}>
+            <View style={styles.inputContainer}>
+              <MaterialIcons name="mail" color="#000" size={18} />
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={(text) => setEmail(text)}
+                autoCapitalize={"none"}
+              />
+            </View>
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={addUserToChat}
+          disabled={!isButtonEnabled}
+          style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
+        >
+          <FontAwesome name="send" size={20} color={"#383A78"} />
+          <Text style={{ color: "#383A78" }}>
+            {isLoading ? (
+              <ActivityIndicator size={"small"} color={"#000"} />
+            ) : (
+              "Add"
+            )}
+          </Text>
+          <FontAwesome
+            name="send"
+            style={{
+              transform: [{ scaleX: -1 }],
+            }}
+            size={20}
+            color={"#383A78"}
+          />
+        </TouchableOpacity>
       </View>
     </>
   );
@@ -141,37 +166,57 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    marginVertical: 10,
-    paddingLeft: 10,
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    marginLeft: 10,
-    color: "black",
+    backgroundColor: "white",
   },
   button: {
     marginLeft: 10,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#5cb85c",
+    padding: 15,
+    borderRadius: 100,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#383A78",
+    width: 327,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
-  loading: {
-    position: "absolute",
-    width: "100%",
+  mainInput: {
+    height: 65,
+    marginVertical: 10,
+  },
+  inputLabel: {
+    fontSize: 14,
+    lineHeight: 16,
+    letterSpacing: 0.1,
+    fontFamily: "medium",
+    color: "#3D4A7A",
+    marginLeft: 6,
+  },
+  eyeIcon: {
+    width: 25,
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "gray",
-    zIndex: 1,
-    opacity: 0.4,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingLeft: 10,
+  },
+  input: {
+    height: "100%",
+    width: "85%",
+  },
+  undrContain: {
+    alignItems: "center",
+    width: 370,
+    height: 45,
+    borderBottomWidth: 1,
+    borderRadius: 8,
+    borderColor: "gray",
+  },
+  singleTitle: {
+    fontSize: 20,
+    fontFamily: "medium",
   },
 });

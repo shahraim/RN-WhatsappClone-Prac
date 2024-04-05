@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -13,6 +12,7 @@ import { useSelector } from "react-redux";
 import { doc, getDocs, setDoc, collection } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
 import { useNavigation } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
 
 export default function GroupChats() {
   const navigation = useNavigation();
@@ -88,6 +88,13 @@ export default function GroupChats() {
 
   return (
     <>
+      <StatusBar style="dark" />
+      <TouchableOpacity
+        style={styles.arrowBack}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={20} color={"black"} />
+      </TouchableOpacity>
       {isLoading && (
         <View style={styles.loading}>
           <ActivityIndicator size={"large"} color={"red"} />
@@ -132,6 +139,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
   },
   inputContainer: {
@@ -166,5 +174,13 @@ const styles = StyleSheet.create({
     backgroundColor: "gray",
     zIndex: 1,
     opacity: 0.4,
+  },
+  arrowBack: {
+    position: "absolute",
+    top: 45,
+    left: 15,
+    padding: 8,
+    borderRadius: 100,
+    zIndex: 1,
   },
 });

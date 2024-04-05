@@ -6,6 +6,7 @@ import {
   View,
   Alert,
   ActivityIndicator,
+  Text,
 } from "react-native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
@@ -13,6 +14,7 @@ import { doc, getDocs, setDoc, collection } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
 
 export default function GroupChats() {
   const navigation = useNavigation();
@@ -21,6 +23,14 @@ export default function GroupChats() {
   const [chatName, setChatName] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [loaded] = useFonts({
+    medium: require("../../assets/fonts/Poppins-Medium.ttf"),
+    regular: require("../../assets/fonts/Poppins-Regular.ttf"),
+  });
+  if (!loaded) {
+    return null;
+  }
 
   const addUserToChat = async () => {
     if (!isButtonEnabled) return;
@@ -95,38 +105,59 @@ export default function GroupChats() {
       >
         <Ionicons name="arrow-back" size={20} color={"black"} />
       </TouchableOpacity>
-      {isLoading && (
-        <View style={styles.loading}>
-          <ActivityIndicator size={"large"} color={"red"} />
-        </View>
-      )}
+      {/*  */}
       <View style={styles.container}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="mail" size={20} color={"gray"} />
-          <TextInput
-            placeholder="Enter user email"
-            placeholderTextColor={"gray"}
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-            style={styles.input}
-            autoCapitalize={"none"}
-          />
+        <View style={styles.groupHead}>
+          <Text style={styles.groupDes}>Group Description</Text>
+          <Text style={styles.groupPara}>Make Group for Team Work</Text>
+          <View style={styles.groupPoint}>
+            <Text style={styles.point}>Group work</Text>
+            <Text style={styles.point}>Team relationship</Text>
+          </View>
         </View>
-        <View style={styles.inputContainer}>
-          <Ionicons name="chatbox-sharp" size={20} color={"gray"} />
-          <TextInput
-            placeholder="Create chat name"
-            placeholderTextColor={"gray"}
-            value={chatName}
-            onChangeText={(text) => setChatName(text)}
-            style={[styles.input, { flex: 1 }]}
-          />
+        <View style={{ alignItems: "center", gap: 10 }}>
+          {/* chat name */}
+          <View style={styles.mainInput}>
+            <Text style={styles.inputLabel}>Chat Name</Text>
+            <View style={[styles.undrContain]}>
+              <View style={styles.inputContainer}>
+                <Ionicons name="chatbox-outline" color="#000" size={20} />
+                <TextInput
+                  value={chatName}
+                  onChangeText={(text) => setChatName(text)}
+                  style={[styles.input]}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* user email to add */}
+          <View style={styles.mainInput}>
+            <Text style={styles.inputLabel}>Email</Text>
+            <View style={[styles.undrContain]}>
+              <View style={styles.inputContainer}>
+                <Ionicons name="mail-outline" color="#000" size={20} />
+                <TextInput
+                  value={email}
+                  onChangeText={(text) => setEmail(text)}
+                  style={styles.input}
+                  autoCapitalize={"none"}
+                />
+              </View>
+            </View>
+          </View>
           <TouchableOpacity
             onPress={addUserToChat}
             disabled={!isButtonEnabled}
             style={[styles.button, { opacity: isButtonEnabled ? 1 : 0.5 }]}
           >
-            <FontAwesome name="send" size={20} color={"white"} />
+            <Text style={{ color: "#fff", fontFamily: "regular" }}>
+              {isLoading ? (
+                <ActivityIndicator size={"small"} color={"#fff"} />
+              ) : (
+                "Create"
+              )}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -138,42 +169,39 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#fff",
     paddingHorizontal: 20,
+    gap: 50,
+  },
+  mainInput: {
+    height: 65,
+    marginVertical: 10,
+  },
+  inputLabel: {
+    fontSize: 14,
+    lineHeight: 16,
+    letterSpacing: 0.1,
+    fontFamily: "medium",
+    color: "#3D4A7A",
+    marginLeft: 6,
   },
   inputContainer: {
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    marginVertical: 10,
-    // paddingHorizontal: 10,
+    gap: 10,
     paddingLeft: 10,
   },
   input: {
-    flex: 1,
-    height: 40,
-    marginLeft: 10,
-    color: "black",
+    height: "100%",
+    width: "85%",
   },
   button: {
     marginLeft: 10,
-    padding: 10,
-    borderRadius: 5,
-    backgroundColor: "#5cb85c",
-  },
-  loading: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
+    padding: 15,
+    borderRadius: 100,
+    backgroundColor: "#3D4A7A",
+    width: 327,
     alignItems: "center",
-    backgroundColor: "gray",
-    zIndex: 1,
-    opacity: 0.4,
   },
   arrowBack: {
     position: "absolute",
@@ -182,5 +210,40 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 100,
     zIndex: 1,
+  },
+  groupHead: {
+    gap: 5,
+  },
+  groupDes: {
+    fontSize: 16,
+    fontFamily: "medium",
+    color: "rgba(121,124,123,0.5)",
+  },
+  groupPara: {
+    fontSize: 40,
+    fontFamily: "medium",
+    color: "#000E08",
+    lineHeight: 50,
+  },
+  groupPoint: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  point: {
+    fontSize: 14,
+    fontFamily: "regular",
+    color: "#000E08",
+    backgroundColor: "rgba(61,74,122,0.1)",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 30,
+  },
+  undrContain: {
+    alignItems: "center",
+    width: 370,
+    height: 40,
+    borderBottomWidth: 1,
+    borderRadius: 8,
+    borderColor: "gray",
   },
 });

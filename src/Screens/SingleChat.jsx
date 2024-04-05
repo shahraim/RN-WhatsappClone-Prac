@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Modal, // Import Modal component
 } from "react-native";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { doc, getDocs, setDoc, collection } from "firebase/firestore";
 import { db } from "../Config/Firebase.config";
@@ -123,7 +123,7 @@ export default function SingleChatModal() {
           <Text style={styles.inputLabel}>Email</Text>
           <View style={[styles.undrContain]}>
             <View style={styles.inputContainer}>
-              <MaterialIcons name="mail" color="#000" size={18} />
+              <Ionicons name="mail-outline" color="#000" size={18} />
               <TextInput
                 style={styles.input}
                 value={email}
@@ -190,12 +190,6 @@ const styles = StyleSheet.create({
     fontFamily: "medium",
     color: "#3D4A7A",
     marginLeft: 6,
-  },
-  eyeIcon: {
-    width: 25,
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
   },
   inputContainer: {
     flexDirection: "row",

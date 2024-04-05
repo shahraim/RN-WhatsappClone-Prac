@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import AppBar from "../Components/AppBar";
 import { ImageBackground, StyleSheet, View } from "react-native";
+import ChatOptions from "../Components/ChatOptions";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,6 +37,7 @@ function MainNavigator() {
         <Stack.Screen name="GroupChats" component={GroupChats} />
         <Stack.Screen name="SingleChat" component={SingleChat} />
         <Stack.Screen name="GroupOptions" component={GroupOptions} />
+        <Stack.Screen name="ChatOptions" component={ChatOptions} />
         <Stack.Screen name="ChatScreen" component={UserChatScreen} />
         <Stack.Screen name="Chatter" component={TabNavigator} />
       </Stack.Navigator>

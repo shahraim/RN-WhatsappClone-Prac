@@ -42,9 +42,10 @@ export default function UserChatScreen({ route, navigation }) {
 
         <TouchableOpacity
           style={styles.userInfo}
-          onPress={() =>
-            room.chatIs === "group" &&
-            navigation.navigate("GroupOptions", { room: room })
+          onPress={
+            () => navigation.navigate("ChatOptions", { room: room })
+            // room.chatIs === "group" &&
+            // navigation.navigate("GroupOptions", { room: room })
           }
         >
           <Image

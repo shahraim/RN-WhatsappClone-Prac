@@ -55,34 +55,39 @@ const SenderMessage = ({ message }) => {
 // Receiver message component
 const ReceiverMessage = ({ message }) => {
   return (
-    <View style={[styles.messageContainer, styles.receiverMessageContainer]}>
-      <Image
-        source={{ uri: message?.user?.profilePic }}
-        width={38}
-        height={38}
-        style={styles.receiverMessageImg}
-      />
-      <View style={styles.messageArea}>
-        <Text style={styles.userName}>{message?.user?.fullName}</Text>
-        <View style={styles.recieverMainMessage}>
-          <Text style={styles.messageText}>{message.message}</Text>
+    <>
+      {!message.isExit && (
+        <View
+          style={[styles.messageContainer, styles.receiverMessageContainer]}
+        >
+          <Image
+            source={{ uri: message?.user?.profilePic }}
+            width={38}
+            height={38}
+            style={styles.receiverMessageImg}
+          />
+          <View style={styles.messageArea}>
+            <Text style={styles.userName}>{message?.user?.fullName}</Text>
+            <View style={styles.recieverMainMessage}>
+              <Text style={styles.messageText}>{message.message}</Text>
+            </View>
+            <View style={{ alignSelf: "flex-end", marginTop: 1 }}>
+              <Text style={{ fontSize: 10, color: "gray" }}>
+                {message.isExit !== "userExit" && message?.timeStamp
+                  ? new Date(
+                      message.timeStamp.seconds * 1000
+                    ).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    })
+                  : "sending"}
+              </Text>
+            </View>
+          </View>
         </View>
-        <View style={{ alignSelf: "flex-end", marginTop: 1 }}>
-          <Text style={{ fontSize: 10, color: "gray" }}>
-            {message?.timeStamp
-              ? new Date(message.timeStamp.seconds * 1000).toLocaleTimeString(
-                  "en-US",
-                  {
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  }
-                )
-              : "sending"}
-          </Text>
-        </View>
-      </View>
-    </View>
+      )}
+    </>
   );
 };
 
@@ -139,7 +144,8 @@ export default function ChatMessages({ room }) {
 
   const handleLongPress = (message) => {
     if (
-      message.user.providerData[0].email === currentUser.providerData[0].email
+      message?.user?.providerData[0]?.email ===
+      currentUser?.providerData[0]?.email
     ) {
       setSelectedMessage(message);
       setShowDeleteModal(true);
@@ -169,11 +175,18 @@ export default function ChatMessages({ room }) {
                 onPress={() => setShowDeleteModal(false)}
                 onLongPress={() => handleLongPress(message)}
               >
-                {message.user.providerData[0].email ===
-                currentUser.providerData[0].email ? (
+                {message.user?.providerData[0]?.email ===
+                currentUser?.providerData[0]?.email ? (
                   <SenderMessage message={message} key={index} />
                 ) : (
                   <ReceiverMessage message={message} key={index} />
+                )}
+                {message.isExit === "userExit" && (
+                  <Text
+                    style={{ alignSelf: "center", color: "gray", fontSize: 10}}
+                  >
+                    {message.message}
+                  </Text>
                 )}
               </TouchableOpacity>
             ))}

@@ -1,21 +1,39 @@
+import React, { useLayoutEffect, useState } from "react";
 import {
+  Alert,
   Image,
   ImageBackground,
+  Modal,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import GroupOptions from "./GroupOptions";
+import { db } from "../Config/Firebase.config";
+import { doc, setDoc, collection, getDocs } from "firebase/firestore";
 
 export default function ChatOptions({ route, navigation }) {
   const { room } = route.params;
   const currentUser = useSelector((state) => state?.user?.userData);
+  const [email, setEmail] = useState("");
+  const [isButtonEnabled, setIsButtonEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [chatRoom, setChatRoom] = useState([]);
+
+  useLayoutEffect(() => {
+    setChatRoom([...room.users]);
+  }, []);
+
+  const toggleModal = () => {
+    setShowModal(!showModal);
+  };
   const [loaded] = useFonts({
     regular: require("../../assets/fonts/Poppins-Regular.ttf"),
     medium: require("../../assets/fonts/Poppins-Medium.ttf"),
@@ -37,6 +55,75 @@ export default function ChatOptions({ route, navigation }) {
           .map((user) => user.fullName)
           .join(", ")
       : room.chatName;
+
+  const addUserToGroup = async () => {
+    if (!isButtonEnabled) return;
+
+    if (email === "") {
+      Alert.alert("Please enter user email");
+      return;
+    }
+
+    setIsButtonEnabled(false);
+    setIsLoading(true);
+
+    try {
+      const usersRef = collection(db, "users");
+      const querySnapshot = await getDocs(usersRef);
+
+      let userExists = false;
+
+      querySnapshot.forEach((doc) => {
+        const userData = doc.data();
+        userData.providerData.forEach((provider) => {
+          if (provider.email === email) {
+            userExists = true;
+          }
+        });
+      });
+
+      if (userExists) {
+        const userExistsInGroup = room.users.some(
+          (user) => user.providerData[0].email === email
+        );
+
+        if (userExistsInGroup) {
+          Alert.alert("User is already in the group");
+          setIsButtonEnabled(true);
+          setIsLoading(false);
+          setShowModal(false);
+          return;
+        }
+        const userData = querySnapshot.docs
+          .find((doc) => {
+            return doc
+              .data()
+              .providerData.some((provider) => provider.email === email);
+          })
+          .data();
+        const updatedUsers = [...room.users, userData];
+        const updatedRoom = { ...room, users: updatedUsers };
+        setChatRoom([...chatRoom, userData]);
+
+        await setDoc(doc(db, "chats", room.id), updatedRoom);
+
+        Alert.alert("User added to the group");
+        setShowModal(false);
+        setEmail("");
+      } else {
+        Alert.alert("User with the specified email does not exist");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error adding user to group:", error);
+      Alert.alert("Error", "An error occurred while adding user to the group");
+    } finally {
+      setIsButtonEnabled(true);
+      setEmail("");
+      setShowModal(false);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -79,8 +166,8 @@ export default function ChatOptions({ route, navigation }) {
               <Ionicons name="call-outline" size={20} color={"white"} />
             </TouchableOpacity>
             {room.chatIs === "group" && (
-              <TouchableOpacity style={styles.iconsTab}>
-                <Image source={require("../../assets/more.png")} />
+              <TouchableOpacity style={styles.iconsTab} onPress={toggleModal}>
+                <Ionicons name="add-circle-outline" size={25} color={"white"} />
               </TouchableOpacity>
             )}
           </View>
@@ -132,7 +219,51 @@ export default function ChatOptions({ route, navigation }) {
               </View>
             </>
           )}
-          {room.chatIs === "group" && <GroupOptions room={room} />}
+          {room.chatIs === "group" && (
+            <GroupOptions
+              chatRoom={chatRoom}
+              isLoading={isLoading}
+              room={room}
+            />
+          )}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={showModal}
+            onRequestClose={toggleModal}
+          >
+            {/* Content of the modal */}
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <TextInput
+                  placeholder="Enter user email"
+                  placeholderTextColor={"gray"}
+                  value={email}
+                  onChangeText={(text) => setEmail(text)}
+                  style={styles.input}
+                  autoCapitalize={"none"}
+                />
+                <TouchableOpacity
+                  onPress={addUserToGroup}
+                  disabled={!isButtonEnabled}
+                  style={[
+                    styles.button,
+                    {
+                      opacity: isButtonEnabled ? 1 : 0.5,
+                    },
+                  ]}
+                >
+                  <Text style={styles.buttonText}>Add User to Group</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={toggleModal}
+                  style={styles.closeButton}
+                >
+                  <Ionicons name="close-circle" size={30} color="#383A78" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
         </View>
       </ImageBackground>
     </View>
@@ -249,5 +380,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#20A090",
     fontFamily: "regular",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    width: "80%",
+    borderRadius: 20,
+    padding: 20,
+    alignItems: "center",
+    gap: 10,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    color: "red",
+  },
+  input: {
+    borderBottomWidth: 1,
+    width: "100%",
+    height: 50,
+  },
+  button: {
+    width: "100%",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#383A78",
+    borderRadius: 100,
+    padding: 12,
+  },
+  buttonText: {
+    fontFamily: "medium",
+    color: "#383A78",
   },
 });

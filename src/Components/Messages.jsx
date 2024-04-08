@@ -89,9 +89,10 @@ export default function Messages({ chat }) {
           setShowDeleteModal(false);
           await deleteDoc(chatRef);
         } else if (chatData.chatIs === "group") {
-          const userIndex = chatData.users.findIndex(
+          const userIndex = chatData?.users?.findIndex(
             (user) =>
-              user.providerData[0].email === currentUser.providerData[0].email
+              user?.providerData[0]?.email ===
+              currentUser?.providerData[0]?.email
           );
           if (userIndex !== -1) {
             const updatedUsers = [...chatData.users];
@@ -156,7 +157,7 @@ export default function Messages({ chat }) {
             }
           >
             <Text style={styles.chatName}>
-              {chat.chatName === currentUser.fullName &&
+              {chat.chatName === currentUser?.fullName &&
               chat.chatName !== mainUser.fullName
                 ? chat.users
                     .filter(

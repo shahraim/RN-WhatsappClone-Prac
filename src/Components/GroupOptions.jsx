@@ -22,8 +22,8 @@ import {
 import { auth, db } from "../Config/Firebase.config";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function GroupOptions({ route, navigation }) {
-  const { room } = route.params;
+export default function GroupOptions({ room, navigation }) {
+  // const { room } = route.params;
   const [email, setEmail] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(true);
   const [error, setError] = useState("");

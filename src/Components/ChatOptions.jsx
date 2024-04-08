@@ -11,6 +11,7 @@ import { StatusBar } from "expo-status-bar";
 import { useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
+import GroupOptions from "./GroupOptions";
 
 export default function ChatOptions({ route, navigation }) {
   const { room } = route.params;
@@ -23,6 +24,19 @@ export default function ChatOptions({ route, navigation }) {
   if (!loaded) {
     return null;
   }
+  let mainUser;
+  room.users.map((el) => (mainUser = el));
+  let userName =
+    room.chatName === currentUser.fullName &&
+    room.chatName !== mainUser.fullName
+      ? room.users
+          .filter(
+            (user) =>
+              user.providerData[0].email !== currentUser.providerData[0].email
+          )
+          .map((user) => user.fullName)
+          .join(", ")
+      : room.chatName;
 
   return (
     <View style={styles.container}>
@@ -39,8 +53,21 @@ export default function ChatOptions({ route, navigation }) {
           <Ionicons name="arrow-back" size={20} color={"white"} />
         </TouchableOpacity>
         <View style={styles.userInfo}>
-          <Image source={{ uri: room.groupIcon }} style={styles.avatar} />
-          <Text style={styles.chatName}>{room.chatName}</Text>
+          <Image
+            source={{
+              uri:
+                room.chatIs === "person" && room.users.length === 2
+                  ? room.users.find(
+                      (user) =>
+                        user.providerData[0].email !==
+                        currentUser.providerData[0].email
+                    )?.profilePic || ""
+                  : room.groupIcon,
+            }}
+            style={styles.avatar}
+            resizeMode="cover"
+          />
+          <Text style={styles.chatName}>{userName}</Text>
           <View style={styles.iconsContainer}>
             <TouchableOpacity style={styles.iconsTab}>
               <Ionicons name="chatbubble-outline" size={20} color={"white"} />
@@ -67,7 +94,7 @@ export default function ChatOptions({ route, navigation }) {
               <View style={styles.personInfo}>
                 <View style={styles.nameBox}>
                   <Text style={styles.subName}>Display Name</Text>
-                  <Text style={styles.nameInfo}>{room.chatName}</Text>
+                  <Text style={styles.nameInfo}>{userName}</Text>
                 </View>
                 <View style={styles.nameBox}>
                   <Text style={styles.subName}>Email Address</Text>
@@ -105,6 +132,7 @@ export default function ChatOptions({ route, navigation }) {
               </View>
             </>
           )}
+          {room.chatIs === "group" && <GroupOptions room={room} />}
         </View>
       </ImageBackground>
     </View>

@@ -8,6 +8,7 @@ import {
   Modal,
   Button,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
@@ -20,16 +21,24 @@ import {
   getDoc,
   updateDoc,
 } from "firebase/firestore";
-import { db } from "../Config/Firebase.config";
+import { db, storage } from "../Config/Firebase.config";
 import { doc, deleteDoc } from "firebase/firestore";
 import { useSelector } from "react-redux";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
+import {
+  getDownloadURL,
+  ref,
+  uploadBlob,
+  uploadBytes,
+  uploadBytesResumable,
+} from "firebase/storage";
 
 const MAX_MESSAGE_LENGTH = 35;
 
 export default function Messages({ chat }) {
   const navigation = useNavigation();
+  const [isUploading, setIsUploading] = useState();
   const isFocused = useIsFocused();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -112,6 +121,9 @@ export default function Messages({ chat }) {
 
   const handleEditProfile = async () => {
     try {
+      // Show loading indicator or placeholder image
+      setIsUploading(true);
+
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
@@ -119,10 +131,33 @@ export default function Messages({ chat }) {
       });
 
       if (!result.cancelled) {
-        setImageUrl([...imageUrl, result.assets[0].uri]);
+        const img = result.assets[0].uri;
+        const response = await fetch(img);
+        const blob = await response.blob();
+
+        const imageRef = ref(storage, `groupIcons/${chat.id}`);
+        const uploadTask = uploadBytesResumable(imageRef, blob);
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {},
+          (error) => {
+            console.error("Error uploading image:", error);
+          },
+          async () => {
+            const imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            const chatRef = doc(db, "chats", chat.id);
+            await updateDoc(chatRef, { groupIcon: imageUrl });
+
+            setImageUrl(imageUrl);
+            console.log("Image uploaded and groupIcon updated:", imageUrl);
+            setIsUploading(false);
+          }
+        );
       }
     } catch (err) {
-      console.log("img", err);
+      console.log("Error selecting image:", err);
+      setIsUploading(false);
     }
   };
 
@@ -130,20 +165,28 @@ export default function Messages({ chat }) {
     <View>
       <View style={styles.chatItem}>
         <TouchableOpacity onPress={() => setIsClicked(!isClicked)}>
-          <Image
-            source={{
-              uri:
-                chat.chatIs === "person" && chat.users.length === 2
-                  ? chat.users.find(
-                      (user) =>
-                        user.providerData[0].email !==
-                        currentUser.providerData[0].email
-                    )?.profilePic || ""
-                  : chat.groupIcon,
-            }}
-            style={styles.avatar}
-            resizeMode="cover"
-          />
+          {isUploading ? (
+            <ActivityIndicator
+              style={styles.avatar}
+              size={22}
+              color={"black"}
+            />
+          ) : (
+            <Image
+              source={{
+                uri:
+                  chat.chatIs === "person" && chat.users.length === 2
+                    ? chat.users.find(
+                        (user) =>
+                          user.providerData[0].email !==
+                          currentUser.providerData[0].email
+                      )?.profilePic || ""
+                    : chat.groupIcon,
+              }}
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+          )}
         </TouchableOpacity>
         <View style={styles.chatContent}>
           <TouchableOpacity

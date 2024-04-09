@@ -107,6 +107,10 @@ export default function ChatOptions({ route, navigation }) {
 
         await setDoc(doc(db, "chats", room.id), updatedRoom);
 
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Chatter" }],
+        });
         Alert.alert("User added to the group");
         setShowModal(false);
         setEmail("");

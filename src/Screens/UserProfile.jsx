@@ -6,7 +6,9 @@ import {
   View,
   ImageBackground,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import UserAvatar from "../Components/UserAvatar";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { AntDesign } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
@@ -32,8 +34,19 @@ export default function UserProfile({ navigation }) {
       });
   };
 
+  const handleDeleteAccount = () => {
+    console.log("Deleting user account...");
+  };
+
   return (
     <View style={styles.container}>
+      <StatusBar style="" />
+      <TouchableOpacity
+        style={styles.arrowBack}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={20} />
+      </TouchableOpacity>
       <ImageBackground
         source={{
           uri: "https://t3.ftcdn.net/jpg/03/27/51/56/360_F_327515607_Hcps04aaEc7Ki43d1XZPxwcv0ZaIaorh.jpg",
@@ -52,9 +65,24 @@ export default function UserProfile({ navigation }) {
         <InfoItem label="Date" value="22/3/2024" />
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("EditProfile")}
+      >
+        <Text style={styles.buttonText}>Edit Profile</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <AntDesign name="logout" size={24} color="white" />
-        <Text style={styles.logoutText}>Logout</Text>
+        <Text style={styles.buttonText}>Logout</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, styles.deleteButton]}
+        onPress={handleDeleteAccount}
+      >
+        <AntDesign name="deleteuser" size={24} color="white" />
+        <Text style={styles.buttonText}>Delete Account</Text>
       </TouchableOpacity>
     </View>
   );
@@ -104,7 +132,7 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 16,
   },
-  logoutButton: {
+  button: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -112,11 +140,23 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginHorizontal: 50,
     borderRadius: 10,
-    marginTop: 30,
+    marginTop: 10,
   },
-  logoutText: {
+  buttonText: {
     color: "#fff",
     fontSize: 18,
     marginLeft: 10,
+  },
+  deleteButton: {
+    backgroundColor: "#FF0000",
+  },
+
+  arrowBack: {
+    position: "absolute",
+    top: 50,
+    left: 15,
+    zIndex: 2,
+    padding: 6,
+    borderRadius: 100,
   },
 });

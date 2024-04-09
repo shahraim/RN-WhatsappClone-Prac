@@ -14,7 +14,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../Config/toolkit/userReducer";
-import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 
@@ -59,17 +59,21 @@ export default function Login({ navigation }) {
         }
         setIsProgress(false);
         navigation.replace("Chatter");
-        setErrorMessageAlert(false);
       })
       .catch((error) => {
         const errorCode = error.code;
-        const errorMess = error.message;
-        if (errorMess.includes("email")) {
-          setErrorMessage("email is incorrect or not found");
-        } else if (errorMess.includes("password")) {
-          setErrorMessage("password is incorrect");
+        const errorMessage = error.message;
+        if (email === "") {
+          setErrorMessage("Email is required.");
+        } else if (errorCode === "auth/invalid-email") {
+          setErrorMessage("No account found with this email.");
+        } else if (errorCode === "auth/missing-password") {
+          setErrorMessage("Enter password.");
+        } else if (errorCode === "auth/invalid-credential") {
+          setErrorMessage("Incorrect password.");
+        } else {
+          setErrorMessage(errorMessage);
         }
-        setErrorMessageAlert(true);
         setIsProgress(false);
       });
   };
@@ -126,8 +130,8 @@ export default function Login({ navigation }) {
               setStateValue={setPassword}
             />
           </View>
-          {errorMessageALert ? (
-            <Text style={{ color: "red" }}>{errorMessage}</Text>
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
           ) : null}
         </View>
         <View style={styles.gap}>
@@ -260,5 +264,9 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     zIndex: -1,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
   },
 });

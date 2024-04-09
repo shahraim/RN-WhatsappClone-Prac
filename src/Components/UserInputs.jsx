@@ -6,7 +6,7 @@ import {
   View,
 } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 
 export default function UserInputs({
@@ -86,11 +86,14 @@ export default function UserInputs({
             style={styles.eyeIcon}
             onPress={() => setPassChange(!passChange)}
           >
-            <FontAwesome name={passChange ? "eye" : "eye-slash"} color="#000" />
+            <Ionicons
+              name={passChange ? "eye" : "eye-off-outline"}
+              size={15}
+              color="#000"
+            />
           </TouchableOpacity>
         )}
       </View>
-      
     </View>
   );
 }

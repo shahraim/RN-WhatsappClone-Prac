@@ -58,15 +58,20 @@ export default function SignUp({ navigation }) {
       })
       .catch((error) => {
         const errorCode = error.code;
-        const errorMess = error.message;
+        const errorMessage = error.message;
         if (name === "") {
-          setErrorMessage("name is required");
-        } else if (errorMess.includes("email")) {
-          setErrorMessage("email is empty or already exist");
-        } else if (errorMess.includes("password")) {
-          setErrorMessage("password is incorrect");
+          setErrorMessage("Name is required.");
+        } else if (email === "") {
+          setErrorMessage("Email is required.");
+        } else if (errorCode === "auth/invalid-email") {
+          setErrorMessage("No account found with this email.");
+        } else if (errorCode === "auth/missing-password") {
+          setErrorMessage("Enter password.");
+        } else if (errorCode === "auth/invalid-credential") {
+          setErrorMessage("Incorrect password.");
+        } else {
+          setErrorMessage(errorMessage);
         }
-        setErrorMessageAlert(true);
         setIsProgress(false);
       });
   };
@@ -146,8 +151,8 @@ export default function SignUp({ navigation }) {
             isPass={true}
             setStateValue={setPassword}
           />
-          {errorMessageALert ? (
-            <Text style={{ color: "red" }}>{errorMessage}</Text>
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
           ) : null}
         </View>
         <View style={styles.gap}>
@@ -297,5 +302,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 60,
     left: 20,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
   },
 });

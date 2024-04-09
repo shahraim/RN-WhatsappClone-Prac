@@ -51,14 +51,6 @@ export default function ChatBody({ room }) {
 
   return (
     <View style={styles.body}>
-      {/* <ImageBackground
-        source={{
-          uri: "https://i0.wp.com/www.gizdev.com/wp-content/uploads/2022/02/WhatsApp-ChatBackground-Walls-5.jpg?w=1080&ssl=1",
-        }}
-        resizeMode="cover"
-        style={styles.image}
-      /> */}
-      {/* chat messahe here */}
       <ChatMessages room={room} />
 
       <KeyboardAvoidingView

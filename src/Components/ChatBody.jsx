@@ -10,12 +10,15 @@ import {
   Modal,
   Text,
 } from "react-native";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as ImagePicker from "expo-image-picker";
 import { FontAwesome, Entypo, Ionicons } from "@expo/vector-icons";
 import { addDoc, collection, doc, serverTimestamp } from "firebase/firestore";
-import { db } from "../Config/Firebase.config";
+import { db, storage } from "../Config/Firebase.config";
 import { useSelector } from "react-redux";
 import ChatMessages from "./ChatMessages";
 import { useFonts } from "expo-font";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export default function ChatBody({ room }) {
   const [message, setMessage] = useState("");
@@ -30,6 +33,61 @@ export default function ChatBody({ room }) {
   if (!loaded) {
     return null;
   }
+
+  const handleImagePick = async () => {
+    try {
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        alert("Permission to access camera roll is required!");
+        return;
+      }
+
+      const imageResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        aspect: [4, 3],
+        quality: 0.5,
+      });
+
+      if (!imageResult.cancelled) {
+        const { uri } = imageResult.assets[0];
+        setMessage(uri);
+        const compressedImage = await ImageManipulator.manipulateAsync(
+          uri,
+          [],
+          {
+            compress: 0.5,
+            format: ImageManipulator.SaveFormat.JPEG,
+          }
+        );
+        const storageRef = ref(storage, "chat_images/" + Date.now());
+        const response = await fetch(compressedImage.uri);
+        const blob = await response.blob();
+        await uploadBytes(storageRef, blob);
+
+        const downloadURL = await getDownloadURL(storageRef);
+        const timeStamp = serverTimestamp();
+        const id = `${Date.now()}`;
+        const messageDoc = {
+          id: id,
+          isImage: true,
+          roomId: room.id,
+          timeStamp: timeStamp,
+          message: downloadURL,
+          user: currentUser,
+        };
+        setMessage("");
+        setModalVisible(false);
+        addDoc(collection(doc(db, "chats", room.id), "messages"), messageDoc)
+          .then(() => {})
+          .catch((err) => alert(err));
+      }
+    } catch (error) {
+      console.error("Error picking an image:", error);
+    }
+  };
+
   const sendMessage = () => {
     if (!message.trim()) {
       return;
@@ -111,7 +169,10 @@ export default function ChatBody({ room }) {
                 <View></View>
               </View>
               <View style={styles.optionContainer}>
-                <TouchableOpacity style={styles.optionItem}>
+                <TouchableOpacity
+                  style={styles.optionItem}
+                  onPress={handleImagePick}
+                >
                   {/* Camera icon */}
                   <Ionicons
                     style={styles.icon}

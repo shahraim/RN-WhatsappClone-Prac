@@ -19,19 +19,43 @@ import {
   query,
   deleteDoc,
 } from "firebase/firestore";
-import { db } from "../Config/Firebase.config";
+import { auth, db } from "../Config/Firebase.config";
 import { useSelector } from "react-redux";
+import { FontAwesome, Entypo, Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 
 // Sender message component
 const SenderMessage = ({ message }) => {
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const openImageModal = (imageUri) => {
+    setSelectedImage(imageUri);
+
+    setShowImageModal(true);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setShowImageModal(false);
+  };
   return (
     <View style={[styles.messageContainer, styles.senderMessageContainer]}>
       <View style={styles.messageArea}>
         <View style={styles.senderMainMessage}>
-          <Text style={[styles.messageText, styles.senderMessageText]}>
-            {message.message}
-          </Text>
+          {message.isImage ? (
+            <TouchableOpacity onPress={() => openImageModal(message.message)}>
+              <Image
+                source={{ uri: message.message }}
+                style={styles.messageImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          ) : (
+            <Text style={[styles.messageText, styles.senderMessageText]}>
+              {message.message}
+            </Text>
+          )}
         </View>
         <View style={{ alignSelf: "flex-end", marginTop: 1 }}>
           <Text style={{ fontSize: 10, color: "gray" }}>
@@ -48,12 +72,43 @@ const SenderMessage = ({ message }) => {
           </Text>
         </View>
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showImageModal}
+        onRequestClose={closeImageModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.fullScreenImage}
+              height={"95%"}
+              resizeMode="contain"
+            />
+            <Button title="Close" onPress={closeImageModal} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 // Receiver message component
 const ReceiverMessage = ({ message }) => {
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const openImageModal = (imageUri) => {
+    setSelectedImage(imageUri);
+
+    setShowImageModal(true);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setShowImageModal(false);
+  };
   return (
     <>
       {!message.isExit && (
@@ -69,7 +124,19 @@ const ReceiverMessage = ({ message }) => {
           <View style={styles.messageArea}>
             <Text style={styles.userName}>{message?.user?.fullName}</Text>
             <View style={styles.recieverMainMessage}>
-              <Text style={styles.messageText}>{message.message}</Text>
+              {message.isImage ? (
+                <TouchableOpacity
+                  onPress={() => openImageModal(message.message)}
+                >
+                  <Image
+                    source={{ uri: message.message }}
+                    style={styles.messageImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.messageText}>{message.message}</Text>
+              )}
             </View>
             <View style={{ alignSelf: "flex-end", marginTop: 1 }}>
               <Text style={{ fontSize: 10, color: "gray" }}>
@@ -87,6 +154,24 @@ const ReceiverMessage = ({ message }) => {
           </View>
         </View>
       )}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showImageModal}
+        onRequestClose={closeImageModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.fullScreenImage}
+              height={"95%"}
+              resizeMode="contain"
+            />
+            <Button title="Close" onPress={closeImageModal} />
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -183,7 +268,7 @@ export default function ChatMessages({ room }) {
                 )}
                 {message.isExit === "userExit" && (
                   <Text
-                    style={{ alignSelf: "center", color: "gray", fontSize: 10}}
+                    style={{ alignSelf: "center", color: "gray", fontSize: 10 }}
                   >
                     {message.message}
                   </Text>
@@ -300,5 +385,21 @@ const styles = StyleSheet.create({
   },
   senderMessageText: {
     color: "#fff",
+  },
+  messageImage: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 10,
+    objectFit: "cover",
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  imageModalContainer: {
+    flex: 1,
+    backgroundColor: "black",
+    width: "100%",
+    height: "100%",
+    zIndex: 1,
   },
 });
